@@ -32,7 +32,7 @@ md"""
 !!! alert "Definición"
 	La óptica es la rama de la física que estudia el comportamiento y las propiedades de la luz, incluidas sus interacciones con la materia, así como la construcción de instrumentos que se sirven de ella o la detectan. Dado que la luz se comporta como onda y como pertícula, es posible desarrollar dos tipos de análisis ópticos: la óptica geométrica estudia las transformaciones de la luz observándola como un rayo y la óptica de Fourier considera la naturaleza ondulatoria de la luz para describir su comportamiento.
 !!! note "Sistemas Ópticos"
-	Los sistemas ópticos son cualquier combinación de objetos que cambian el camino de la luz para formar imagenes. Existen diferentes aplicaciones, las más comunes son astronomía y microscopía.
+	Los sistemas ópticos son cualquier combinación de objetos que separan medios con distinto índice de refracción que cambian el camino de la luz para formar imagenes. Existen diferentes aplicaciones, las más comunes son astronomía y microscopía.
 	En astronomía en general los sistemas de adquisición son de la forma:
 """
 
@@ -50,7 +50,7 @@ Para modelar correctamente los sistemas ópticos es fundamental comprender corre
 
 !!! note "Ecuaciones de Maxwell en el vacío"
 	$\boldsymbol{\nabla} \cdot \boldsymbol{E} = \frac{\rho}{\epsilon_0} \qquad \boldsymbol{\nabla} \cdot \boldsymbol{B} = 0 \qquad \boldsymbol{\nabla}\times \boldsymbol{E} = -\frac{d\boldsymbol{B}}{dt}\qquad \boldsymbol{\nabla}\times \boldsymbol{B} = \mu_0\boldsymbol{J} +\mu_0\epsilon_0\frac{d\boldsymbol{E}}{dt}$
-Donde \boldsymbol{E} es el vector campo eléctrico, \boldsymbol{B} es el vector campo magnético, $\rho$ es la densidad de carga en el espacio, $t$ es el tiempo, $\epsilon_0$ es la permitividad eléctrica del vacío, \boldsymbol{J} es el venctor densidad de corriente y $\mu_0$ es la permeabilidad eléctrica del vacío.
+Donde $\boldsymbol{E}$ es el vector campo eléctrico, $\boldsymbol{B}$ es el vector campo magnético, $\rho$ es la densidad de carga en el espacio, $t$ es el tiempo, $\epsilon_0$ es la permitividad eléctrica del vacío, $\boldsymbol{J}$ es el venctor densidad de corriente y $\mu_0$ es la permeabilidad eléctrica del vacío.
 
 Si nos situamos en el vacío, en una zona libre de cargas (y por lo tanto de corrientes) se pueden expresar las ecuaciones de Maxwell como:
 
@@ -78,273 +78,66 @@ Re escribiendo el rotacional de la ley de Faraday-Lenz:
 
 $$-\frac{d\left(\boldsymbol{\nabla}\times\boldsymbol{B} \right)}{dt} = \boldsymbol{\nabla}\left(\boldsymbol{\nabla}\cdot\boldsymbol{E} \right)-\boldsymbol{\nabla}^2\boldsymbol{E}$$
 
+Para continuar el análisis recordamos la ley de Gauss en el vacío:
+
+$$\boldsymbol{\nabla}\cdot\boldsymbol{E} = 0$$
+
+A partir de esto:
+
+$$\frac{d\left(\boldsymbol{\nabla}\times\boldsymbol{B} \right)}{dt} =\boldsymbol{\nabla}^2\boldsymbol{E}$$
+
+Ahora reemplazo el rotacional del campo magnético del la ley de Ampere $\left( \boldsymbol{\nabla}\times \boldsymbol{B} = \mu_0\epsilon_0\frac{d\boldsymbol{E}}{dt}\right)$
+
+$$\frac{d}{dt}\left(\mu_0\epsilon_0\frac{d\boldsymbol{E}}{dt}\right) =\boldsymbol{\nabla}^2\boldsymbol{E}$$
+
+Dado que la derivada es un operador lineal se obtiene:
+
+
+$$\mu_0\epsilon_0\frac{d^2\boldsymbol{E}}{dt^2}=\boldsymbol{\nabla}^2\boldsymbol{E}$$
+
+**Esta es una ecuación de onda, lo que indica que el campo eléctrico en el vacío se mueve como una onda de velocidad** $\mathbf{c=\sqrt{\frac{1}{\mu_0\epsilon_0}}\approx 3\cdot 10^8 \left[ \frac{m}{s}\right]}$
+
+Análogo a este procedimiento, tomando rotacional a la ley de Ampere $\left( \boldsymbol{\nabla}\times \boldsymbol{B} = \mu_0\epsilon_0\frac{d\boldsymbol{E}}{dt}\right)$ es posible demostrar que el campo magnérico en el vacío se comporta de la forma:
+$$\mu_0\epsilon_0\frac{d^2\boldsymbol{B}}{dt^2}=\boldsymbol{\nabla}^2\boldsymbol{B}$$
+
+**Esta es una ecuación de onda, lo que indica que el campo eléctrico en el vacío se mueve como una onda de velocidad** $\mathbf{c=\sqrt{\frac{1}{\mu_0\epsilon_0}}\approx 3\cdot 10^8 \left[ \frac{m}{s}\right]}$
+
+!!! alert "Ecuaciones de onda electromagnética"
+	$\mu_0\epsilon_0\frac{d^2\boldsymbol{E}}{dt^2}=\boldsymbol{\nabla}^2\boldsymbol{E} \qquad \mu_0\epsilon_0\frac{d^2\boldsymbol{B}}{dt^2}=\boldsymbol{\nabla}^2\boldsymbol{B}$
+!!! note "Solución a la Ecuación de onda electromagnética"
+	$\boldsymbol{E}(\boldsymbol{r},t) = E_0e^{i(\boldsymbol{k}\cdot\boldsymbol{r}-\omega t)}\boldsymbol{\hat{n}} \qquad \boldsymbol{B}(\boldsymbol{r},t) = B_0e^{i(\boldsymbol{k}\cdot\boldsymbol{r}-\omega t)}\boldsymbol{\hat{k}}\times \boldsymbol{\hat{n}}$
+El campo eléctrico y el campo magnetico son transversales en el vacío, y la luz se mueve como una onda plana. En este contexto, el vector $\boldsymbol{r}$ corresponde a la posición de un punto en el espacio. Por su parte $\omega$ es la frecuencia angular de la onda y $\lambda$ la longitud de onda. El vector $\boldsymbol{k}$ corresponde al número de onda $\boldsymbol{k} = \frac{2\pi}{\lambda}\boldsymbol{\hat{k}}$ y $\boldsymbol{\hat{n}}$ es el vector de polarización.
 """
 
-# ╔═╡ 4a99170c-95f6-4c5b-b519-c8fbc87e86ec
-begin
-	function heaviside(t)
-	    return 0.5 * (sign.(t) + 1)
-	end
-
-	function rect(t)
-		return heaviside(t + 0.5) - heaviside(t - 0.5)
-	end
-
-	th = collect(LinRange(-5, 5, 1000))
-
-	function x(t)
-		rect(t - 0.5) + (2/3) * rect(t - (3/2)) + (1/3) * rect.(t - (5/2))
-		
-	end
-
-	plot(
-		th,
-		x.(th),
-		ylims = (-0.2, 1.2),
-		legend = false,
-		framestyle = :origin,
-		linewidth = 3,
-		xlabel = L"t"
-	)
-	
-end
-
-
-
-# ╔═╡ ba7bd535-ad6e-408f-8ce6-a9772a79536e
+# ╔═╡ a8c002c8-9568-473e-9748-33f9e675f736
 md"""
-!!! warning "Ejemplo" 
-	Desplazamiento de una función Gauss.
+## Óptica Geométrica
 """
 
-# ╔═╡ 2aa66768-bd41-4361-a1b1-0502ac560cff
-begin
-
-	tg = collect(LinRange(-5, 5, 100))
-
-	animg = @animate for i = -5.0:0.1:5
-	    plot(
-		tg,
-		exp.(-pi .* (tg .- i) .* (tg .- i)),
-		xlims = (-5, 5),
-		ylims = (-0.5, 1.5),
-		title = L"\textrm{Gauss}(t - %$i)",
-		legend = false,
-		framestyle = :origin,
-		linewidth = 3,
-		xlabel = L"t"
-	)
-		end
-	gif(animg, fps = 5,show_msg=false)
-end
-
-
-
-
-# ╔═╡ 5803dc23-b4f2-42e2-aaa9-937af0d54b93
+# ╔═╡ 104177b7-d499-448d-9076-552d9e3dcf9f
 md"""
-Observamos que para un desplazamiento negativo, la señal se corre hacia la izquierda con respecto al eje de ordenadas.
+!!! alert "Definición"
 """
 
-# ╔═╡ b3fe894b-804e-4b3b-80f8-220b599fc999
+# ╔═╡ 839a845c-5f1e-406c-b4e3-ad43988bdb4f
 md"""
-***
-### Escalamiento
-
-Para esta transformación podemos ocupar el siguiente operador, el cual se aplica a una función $\varphi$:
-
-!!! alert "Operador escalamiento"
-	$$\sigma_a \{\varphi\}(t) = \sigma_a \varphi(t) = \varphi(at) \;\; a \in \mathbb{R}\setminus\left\{0\right\}$$
-
-
-El escalamiento temporal de una señal $x(t)$ se define como
-
-!!! note "Definición de escalamiento"
-	$$y(t) = x(a \cdot t) = \sigma_a x(t)$$
-
-con $a \in \mathbb{R}$. La señal $x(t)$ se
-
-* ensancha para $0 < a < 1$
-* comprime para $a > 1$
-* se reversa en el tiempo y se escala para $a < 0$
-
-Una aplicación de esta operación en el procesamiento de señales y la adaptación de las escalas temporales para señales estándar y el modelamiento del [efecto doppler](https://en.wikipedia.org/wiki/Doppler_effect).
-
-!!! warning "Ejemplo"
-	Diferentes escalamientos de la señal escalera anterior, con factores de escalamiento $1,0.5$ y $2$.
+## Óptica Ondulatoria
 """
 
-# ╔═╡ f738b1e6-932f-41b0-8d1d-f92c09242d43
-begin
-	te = collect(LinRange(-5, 5, 1000))
-	plot(te,
-		[x.(te),
-		x.(0.5 .* te),
-		x.(2 .* te)],
-		ylims=(-0.2, 1.2),
-		xlims = (-2, 7),
-		labels = [L"a = 1" L"a = 0.5" L"a = 2"],
-		framestyle = :origin,
-		linewidth = 3
-	)
-end
-
-# ╔═╡ 0d5b2004-3afc-44a1-9d4e-45080deb955d
+# ╔═╡ 316ea75a-a601-4fa4-a947-4e339b7dd609
 md"""
-!!! warning "Ejemplo"
-	Escalamiento de una función Gauss. 
+### Aproximación de campo cercano
 """
 
-# ╔═╡ 699f1554-e1a9-41bf-af24-f4ef76270c21
-begin
-
-	tg2 = collect(LinRange(-5, 5, 1000))
-	animg2 = @animate for i = 0:0.05:2
-	    plot(
-		tg2,
-		exp.(-pi .* tg2 .* tg2 .* i),
-		xlims = (-5, 5),
-		ylims = (-0.5, 1.5),
-		title = L"\textrm{Gauss}(t * %$i)",
-		legend = false,
-		framestyle = :origin,
-		linewidth = 3,
-		xlabel = "t"
-	)
-		end
-	gif(animg2, fps = 3,show_msg=false)
-end
-
-
-
-# ╔═╡ 6ec4ae1f-8a2c-4a4f-b3b5-6cddc92e0b97
+# ╔═╡ 779667de-9baf-41f6-b58f-3bbfb3188572
 md"""
-### Desplazamiento y escalamiento
-
-El desplazamiento y escalamiento pueden ocurrir en forma simultánea en una señal.
-
-!!! warning "Ejemplo"
-	Desfase y escalamiento de una función Gauss. En la siguiente figura se muestra la función Gauss escalada y desplazada en cantidades aleatorias.
+### Aproximación de campo Lejano
 """
 
-# ╔═╡ ade3caef-2384-4844-b2b2-ea92735fe914
-begin
-
-	tb = collect(LinRange(-5, 5, 1000))
-	taus = collect(LinRange(-2, 2, 11))
-	aas = collect(LinRange(0.1, 3, 11))
-
-	animgb = @animate for m = 2, i = 1:1:10
-		if (m == 0)
-			# cambia tau
-			s_tau_2 = taus[i]
-			s_a_2 = 1
-		elseif (m == 1)
-			# cambia a
-			s_tau_2 = 0
-			s_a_2 = aas[i]
-		else
-			s_tau_2 = round(rand(taus),digits=2)
-			s_a_2 = round(rand(aas),digits=2)
-		end
-			
-
-	    plot(tb, exp.(-pi .* (tb .- s_tau_2) .* (tb .- s_tau_2) .* s_a_2),
-	    xlims = (-5, 5), ylims = (-0.5, 1.5), legend = false, framestyle=:origin, linewidth=3, xlabel = L"t",
-	    title = L"\textrm{Gauss}(%$s_a_2 (t - %$s_tau_2))")
-		end
-    gif(animgb, fps = 1,show_msg=false)
-	
-end
-
-
-# ╔═╡ cedf6f7c-98b0-4f5c-b883-29f6a48084a9
+# ╔═╡ f7c7d016-501f-4810-a04f-473ba57fa613
 md"""
-### Reversión desplazada
-La reversión desplazada de una señal $x(t)$ se define como
-
-!!! note "Definición de una reversión desplazada"
-	$$y(t) = x(\tau - t)$$
-
-con $\tau \in \mathbb{R}$. Como $x(\tau - t) = x(- (t - \tau))$ esta operación también se puede representar como una reversión temporal seguida de un desfase de $\tau$ en la señal revertida. Para $\tau = 0$ esto solo es una reversión temporal de la señal. 
-
-Esta operación se puede interpretar geométricamente como un espejamiento de la señal $x(t)$ respecto al eje vertical en el instante $t=\frac{\tau}{2}$.
+#### Respuesta al impulso
 """
-
-# ╔═╡ dc386b2d-5bd2-4f9f-a95d-921207807d44
-md"""
-!!! warning "Ejemplo"
-	En el siguiente gráfico se muestra una señal esalera y su reversión desplazada con $\tau = -1$.
-"""
-
-# ╔═╡ 77ebac4f-6034-41b8-a01c-aba64f34af61
-begin
-	tau = -1
-	tx = collect(LinRange(-5, 5, 1000))
-
-	plot(tx, [x.(tx), x.(tau .- tx)], 
-	labels = [L"y(t)" L"y(\tau - t)"],
-	ylims = (-0.2, 1.2),
-	framestyle = :origin,
-	linewidth = 3,
-	xlabel = L"t")
-
-end
-
-
-
-# ╔═╡ 4ea10119-256c-4f0a-af7a-79f112405792
-md"""
-## Construcción de señales mediante transformaciones.
-
-Las transformaciones de señales son útiles para construir otras señales. 
-"""
-
-# ╔═╡ 1c265240-d8f6-4afc-8c9b-95bbafa1e7bc
-md"""
-!!! warning "Ejemplo"
-	La siguiente señal se puede construir mediante la suma de un conjunto de señales rects desplazadas y amplificadas por distintos factores. 
-
-	$$f(t) = \sqcap(t-\frac{1}{2}) - \frac{1}{2}\sqcap(t-\frac{3}{2}) + \frac{1}{4}\sqcap(t-\frac{5}{2})$$
-"""
-
-# ╔═╡ 0dc6d44e-3e82-411e-a266-495c5aa8ffe9
-begin
-
-	tr = collect(LinRange(-1, 5, 1000))
-
-	plot(tr, 
-		rect.(tr .- 0.5) .+ (0.25 .* rect.(tr .- (5 ./ 2))).- (0.5 .* (rect.(tr .- (3 ./ 2)))) ,
-	ylims = (-2, 2), legend = false,framestyle = :origin, linewidth=3, title=L"f(t)",xlabel=L"t")
-
-end
-
-
-
-# ╔═╡ 0222f24f-22c8-46f7-bc71-bbe39deea5a8
-md"""
-***
-!!! warning ""
-	[[Volver a la tabla de contenidos](index.jl.html)]
-"""
-
-# ╔═╡ 3a11430a-b120-4cfa-92fe-1e448ba43b3c
-md"""
-***
-!!! footer "Licencia"
-	Estos apuntes están licenciados bajo la licencia [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/). 
-
-	**Como citar: Rodrigo F. Cádiz, Notebooks de Señales y Sistemas, 2022.**
-"""
-
-# ╔═╡ 73436f10-5372-4c0a-9b41-df2b1d72c00a
-md"""
-!!! danger "Colaboradores y referencias"
-	Estos apuntes han contado con la colaboración de Magdalena Araya y Fabián Cádiz. Parte del contenido está basado en apuntes de clases de Pablo Irarrázaval y en las siguientes [referencias bibliográficas](Referencias.jl.html).
-"""
-
-# ╔═╡ a202ad25-fe06-448e-a190-5503b711a83e
-PlutoUI.TableOfContents(title="Indice", indent=true, depth=4, aside=true)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1776,27 +1569,13 @@ version = "0.9.1+5"
 # ╟─68f42c62-04e4-4cd8-ab06-81ae36d429c2
 # ╟─3d0dfca8-a2f0-4288-9199-6ebb05d095be
 # ╟─717a0eaf-26dd-45da-bf78-8f49337b6cdd
-# ╠═00876874-6d57-4ec3-a4a2-daecdbce568d
-# ╟─4a99170c-95f6-4c5b-b519-c8fbc87e86ec
-# ╟─ba7bd535-ad6e-408f-8ce6-a9772a79536e
-# ╟─2aa66768-bd41-4361-a1b1-0502ac560cff
-# ╟─5803dc23-b4f2-42e2-aaa9-937af0d54b93
-# ╟─b3fe894b-804e-4b3b-80f8-220b599fc999
-# ╟─f738b1e6-932f-41b0-8d1d-f92c09242d43
-# ╟─0d5b2004-3afc-44a1-9d4e-45080deb955d
-# ╟─699f1554-e1a9-41bf-af24-f4ef76270c21
-# ╟─6ec4ae1f-8a2c-4a4f-b3b5-6cddc92e0b97
-# ╟─ade3caef-2384-4844-b2b2-ea92735fe914
-# ╟─cedf6f7c-98b0-4f5c-b883-29f6a48084a9
-# ╟─dc386b2d-5bd2-4f9f-a95d-921207807d44
-# ╟─77ebac4f-6034-41b8-a01c-aba64f34af61
-# ╟─4ea10119-256c-4f0a-af7a-79f112405792
-# ╟─1c265240-d8f6-4afc-8c9b-95bbafa1e7bc
-# ╟─0dc6d44e-3e82-411e-a266-495c5aa8ffe9
-# ╟─0222f24f-22c8-46f7-bc71-bbe39deea5a8
-# ╟─3a11430a-b120-4cfa-92fe-1e448ba43b3c
-# ╠═73436f10-5372-4c0a-9b41-df2b1d72c00a
+# ╟─00876874-6d57-4ec3-a4a2-daecdbce568d
+# ╟─a8c002c8-9568-473e-9748-33f9e675f736
+# ╠═104177b7-d499-448d-9076-552d9e3dcf9f
+# ╠═839a845c-5f1e-406c-b4e3-ad43988bdb4f
+# ╠═316ea75a-a601-4fa4-a947-4e339b7dd609
+# ╠═779667de-9baf-41f6-b58f-3bbfb3188572
+# ╠═f7c7d016-501f-4810-a04f-473ba57fa613
 # ╟─44d99566-5418-41bc-b9e4-b2a93076ae2e
-# ╟─a202ad25-fe06-448e-a190-5503b711a83e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
