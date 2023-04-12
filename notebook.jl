@@ -37,7 +37,7 @@ md"""
 """
 
 # ╔═╡ 3d0dfca8-a2f0-4288-9199-6ebb05d095be
-md"Here is a _dog_: $(LocalResource("C:\\Users\\kmint\\Desktop\\Ingeniería UC\\Mooc\\Sistema_Optico.png")))"
+md"Here is a _dog_: (PlutoUI.LocalResource("Sistema_Optico.png"))"
 
 # ╔═╡ 00876874-6d57-4ec3-a4a2-daecdbce568d
 md"""
