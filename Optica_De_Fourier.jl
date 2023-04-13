@@ -117,11 +117,72 @@ md"""
 # ╔═╡ 104177b7-d499-448d-9076-552d9e3dcf9f
 md"""
 !!! alert "Definición"
+	En este análisis físico se considera que la luz es una onda que se refleja y se refracta, ambos fenómenos están basados en el principio de Fermat. **La óptica geométrica es válida cuando la longitud de onda de la luz que atraviesa el sistema óptico es de mucho menor tamaño que los elementos que componen sistema**, ya que modela el comportamiento de la luz como un rayo.
+"""
+
+# ╔═╡ 2d0a2079-79e8-4ae8-ad99-9e10ed7a40f0
+md"""
+!!! note "Principio de Fermat"
+	*El camino recorrido entre dos puntos por un rayo de luz es el camino que se puede atravesar en el menor tiempo posible*
+"""
+
+# ╔═╡ 669b37f5-631c-4ad5-b4db-c0472fce93d4
+md"""
+### Reflexión
+"""
+
+# ╔═╡ ed4170bd-32c7-4cf7-aac7-5f0e87d6b780
+md"""
+Cuando un rayo de luz se refleja, el ángulo de incidencia respecto a la normal es igual al ángulo reflejado respecto a la normal 
+"""
+
+# ╔═╡ d6e549d3-e43d-42f2-af3c-d2d3e060f83f
+md""" $(LocalResource("Espejo_plano.png",:width => 400))"""
+
+# ╔═╡ 2745abb7-0b29-4fc2-9035-e68954ad4bed
+md"""
+### Refracción
+"""
+
+# ╔═╡ 43b46c18-1454-4e31-b74a-3771e8cadcdb
+md"""
+La refracción es el cambio de dirección de propagación que experimentan las ondas cuando pasan de un medio a otro. 
+
+"""
+
+# ╔═╡ c791ea1e-9317-43b3-a9ad-662eee8d0d01
+md""" $(LocalResource("refraccion.png",:width => 400))"""
+
+# ╔═╡ 2a92ae22-391d-4f76-ad46-5dc28d24baa3
+md"""
+!!! note "Ley de Snell"
+	$n_1\sin(i) = n_2\sin(r)$
+Donde $n_1$ es el índice de refracción del medio 1 y $n_2$ es el índice de refracción del medio 2. El índice de refracción mide cuanto cambia la velocidad de la luz en un medio ($v$) respecto a la velocidad de la luz en el vacío($c$):
+
+$$n = \frac{c}{v}$$
+"""
+
+# ╔═╡ 153109c5-b9a0-4519-8883-36bb5a47268b
+md"""
+!!! danger "Observación"
+	En el contexto de la óptica geométrica se desarrollan instrumentos ópticos como telescopios y microscopios operando en base a espejos y lentes esféricos. La óptica geométrica puede explicar aberraciones ópticas como aberración esférica, curvatura de campo, astigmatismo, coma y aberración cromática. Sin embargo, observando la luz como un rayo no es posible explicar por qué cuando observamos a a través de un sistema óptico dos fuentes puntuales monocromáticas sólo somos capaces de diferenciar que son dos fuentes y no confundirlas con una sola cuando la distancia entre las fuentes es mayor a una distancia específica para cada sistema óptico. Este problema lo resuelve la óptica ondulatoria.
 """
 
 # ╔═╡ 839a845c-5f1e-406c-b4e3-ad43988bdb4f
 md"""
 ## Óptica Ondulatoria
+"""
+
+# ╔═╡ 16789574-e24a-4776-8d18-b38623685524
+md"""
+!!! alert "Definición"
+	En este análisis físico se considera que la luz es una onda que se refleja y se refracta, pero también se considera que se **difracta**, lo que permite un análisis más exacto de lo que ocurre con la luz al pasar por una apertura antes de entrar a un sistema óptico
+"""
+
+# ╔═╡ ca305417-d685-4736-b90f-6894c0d307bc
+md"""
+!!! note "Difracción"
+	Es un fenómeno ondulatorio de desviación de la dirección de propagación de una onda desde su trayectoria rectilínea que no pueden interpretarse como reflexión o refracción. Consiste en la desviación de ondas alrededor de las esquinas de un obstáculo o a través de una abertura. Esta se produce cuando la onda al atravesar un obstáculo transparente u opaco cambia su magnitud o su fase.
 """
 
 # ╔═╡ 316ea75a-a601-4fa4-a947-4e339b7dd609
@@ -1571,8 +1632,19 @@ version = "0.9.1+5"
 # ╟─717a0eaf-26dd-45da-bf78-8f49337b6cdd
 # ╟─00876874-6d57-4ec3-a4a2-daecdbce568d
 # ╟─a8c002c8-9568-473e-9748-33f9e675f736
-# ╠═104177b7-d499-448d-9076-552d9e3dcf9f
-# ╠═839a845c-5f1e-406c-b4e3-ad43988bdb4f
+# ╟─104177b7-d499-448d-9076-552d9e3dcf9f
+# ╟─2d0a2079-79e8-4ae8-ad99-9e10ed7a40f0
+# ╟─669b37f5-631c-4ad5-b4db-c0472fce93d4
+# ╟─ed4170bd-32c7-4cf7-aac7-5f0e87d6b780
+# ╟─d6e549d3-e43d-42f2-af3c-d2d3e060f83f
+# ╟─2745abb7-0b29-4fc2-9035-e68954ad4bed
+# ╟─43b46c18-1454-4e31-b74a-3771e8cadcdb
+# ╟─c791ea1e-9317-43b3-a9ad-662eee8d0d01
+# ╟─2a92ae22-391d-4f76-ad46-5dc28d24baa3
+# ╟─153109c5-b9a0-4519-8883-36bb5a47268b
+# ╟─839a845c-5f1e-406c-b4e3-ad43988bdb4f
+# ╟─16789574-e24a-4776-8d18-b38623685524
+# ╠═ca305417-d685-4736-b90f-6894c0d307bc
 # ╠═316ea75a-a601-4fa4-a947-4e339b7dd609
 # ╠═779667de-9baf-41f6-b58f-3bbfb3188572
 # ╠═f7c7d016-501f-4810-a04f-473ba57fa613
