@@ -32,12 +32,12 @@ md"""
 !!! alert "Definición"
 	La óptica es la rama de la física que estudia el comportamiento y las propiedades de la luz, incluidas sus interacciones con la materia, así como la construcción de instrumentos que se sirven de ella o la detectan. Dado que la luz se comporta como onda y como pertícula, es posible desarrollar dos tipos de análisis ópticos: la óptica geométrica estudia las transformaciones de la luz observándola como un rayo y la óptica de Fourier considera la naturaleza ondulatoria de la luz para describir su comportamiento.
 !!! note "Sistemas Ópticos"
-	Los sistemas ópticos son cualquier combinación de objetos que separan medios con distinto índice de refracción que cambian el camino de la luz para formar imagenes. Existen diferentes aplicaciones, las más comunes son astronomía y microscopía.
+	Los sistemas ópticos son cualquier combinación de objetos que separan medios con distinto índice de refracción que cambian el camino de la luz para formar imagenes. Los sistemas ópticos no cambian la frecuencia temporal de las ondas electromagnéticas que los atraviesan. Existen diferentes aplicaciones, las más comunes son astronomía y microscopía.
 	En astronomía en general los sistemas de adquisición son de la forma:
 """
 
 # ╔═╡ 3d0dfca8-a2f0-4288-9199-6ebb05d095be
-md""" $(LocalResource("Sistema_Optico.png"))"""
+md""" $(LocalResource("Imagenes/Sistema_Optico.png"))"""
 
 # ╔═╡ 717a0eaf-26dd-45da-bf78-8f49337b6cdd
 md"En este contexto, se puede observar que la luz es una señal que trae informacion de fuentes luminosas y el sistema óptico transforma esta señal para que se pueda interpretar. Dado que el camino de la luz está en el espacio, se puede modelar un sistema óptico como un sistema 2D."
@@ -137,7 +137,7 @@ Cuando un rayo de luz se refleja, el ángulo de incidencia respecto a la normal 
 """
 
 # ╔═╡ d6e549d3-e43d-42f2-af3c-d2d3e060f83f
-md""" $(LocalResource("Espejo_plano.png",:width => 400))"""
+md""" $(LocalResource("Imagenes/Espejo_plano.png",:width => 400))"""
 
 # ╔═╡ 2745abb7-0b29-4fc2-9035-e68954ad4bed
 md"""
@@ -151,7 +151,7 @@ La refracción es el cambio de dirección de propagación que experimentan las o
 """
 
 # ╔═╡ c791ea1e-9317-43b3-a9ad-662eee8d0d01
-md""" $(LocalResource("refraccion.png",:width => 400))"""
+md""" $(LocalResource("Imagenes/refraccion.png",:width => 400))"""
 
 # ╔═╡ 2a92ae22-391d-4f76-ad46-5dc28d24baa3
 md"""
@@ -182,13 +182,112 @@ md"""
 # ╔═╡ ca305417-d685-4736-b90f-6894c0d307bc
 md"""
 !!! note "Difracción"
-	Es un fenómeno ondulatorio de desviación de la dirección de propagación de una onda desde su trayectoria rectilínea que no pueden interpretarse como reflexión o refracción. Consiste en la desviación de ondas alrededor de las esquinas de un obstáculo o a través de una abertura. Esta se produce cuando la onda al atravesar un obstáculo transparente u opaco cambia su magnitud o su fase.
+	Es un fenómeno ondulatorio de desviación de la dirección de propagación de una onda desde su trayectoria rectilínea que no pueden interpretarse como reflexión o refracción. Consiste en la desviación de ondas alrededor de las esquinas de un obstáculo o a través de una abertura. Esta se produce cuando la onda al atravesar un obstáculo transparente u opaco cambia su magnitud o su fase. 
 """
 
-# ╔═╡ 316ea75a-a601-4fa4-a947-4e339b7dd609
+# ╔═╡ 93425426-1ff2-4d88-8bda-4596c19ec53f
+md""" $(LocalResource("Imagenes/Difraccion.png",:width => 400))"""
+
+# ╔═╡ 0025a72e-6ef9-4d8f-a608-91eda2d29c35
 md"""
-### Aproximación de campo cercano
+!!! alert "Patron de Difracción"
+	Los segmentos de frente de onda que logran atravesar la apertura interfieren entre sí, lo que genera que se produzcan secciones más luminosas (la interferencia es positiva, las ondas que interfieren están en fase y se suman) y secciones oscuras (la interferencia es negativa, las ondas que están en contra fase se suman y la suma da cero).
 """
+
+# ╔═╡ 10798561-4fdc-4a04-b9c1-fbc163c38f49
+begin
+	
+	gr(size=(700,400))
+	anim = @animate for n = 1:1:2 # numero de terminos
+		L2 = 1
+		odds = collect(1:2:2*n)
+		points = 1000
+		x= collect(LinRange(0, 2, points))
+		fx = zeros(points)
+		bn = zeros(2*n)
+		
+	    p1 = plot(x, x .* 0, title = L"\textrm{Ondas\; difractadas}", xlabel = L"t", legend = false, titlefontsize = 10)
+	
+		p2 = plot(x, 0*x, title = L"\textrm{Superposicion}", xlabel = L"t", legend = false, titlefontsize = 10)
+	
+		p = plot(p1, p2, layout = (1, 2))
+		k=1
+		for odd in odds
+			if k%2 == 0
+				y =  sin.(pi .* (x ./ L2))
+			else
+				y =  -sin.(pi .* (x ./ L2))
+			end
+			fx .+= y
+			plot!(p[1], y, framestyle=:origin, linewidth=1, xticks = ([0, 500, 1000], [L"0", L"L", L"2L"]))
+			k=k+1
+			
+		end
+	
+		plot!(p[2], fx,  framestyle=:origin, linewidth=3, xticks = ([0, 500, 1000], [L"0", L"L", L"2L"]))
+	end
+
+	gif(anim,fps=1,show_msg=false)
+		
+end
+
+# ╔═╡ af39a45a-35e3-4cf7-a235-f8b0df82f6b1
+begin
+	
+	gr(size=(700,400))
+	anima = @animate for n = 1:1:2 # numero de terminos
+		L2 = 1
+		odds = collect(1:2:2*n)
+		points = 1000
+		x= collect(LinRange(0, 2, points))
+		fx = zeros(points)
+		bn = zeros(2*n)
+		
+	    p1 = plot(x, x .* 0, title = L"\textrm{Ondas\; difractadas}", xlabel = L"t", legend = false, titlefontsize = 10)
+	
+		p2 = plot(x, 0*x, title = L"\textrm{Superposicion}", xlabel = L"t", legend = false, titlefontsize = 10)
+	
+		p = plot(p1, p2, layout = (1, 2))
+		k=1
+		for odd in odds
+			if k%2 == 0
+				y =  sin.(pi .* (x ./ L2))
+			else
+				y =  0.5sin.(pi .* (x ./ L2))
+			end
+			fx .+= y
+			plot!(p[1], y, framestyle=:origin, linewidth=1, xticks = ([0, 500, 1000], [L"0", L"L", L"2L"]))
+			k=k+1
+			
+		end
+	
+		plot!(p[2], fx,  framestyle=:origin, linewidth=3, xticks = ([0, 500, 1000], [L"0", L"L", L"2L"]))
+	end
+
+	gif(anima,fps=1,show_msg=false)
+		
+end
+
+# ╔═╡ f2f15596-4e03-46d1-b7ec-0438cabfbfaf
+md"""
+A continuación se muestran imágenes de dos tipos de patrones de difracción observados en laboratorio.
+"""
+
+# ╔═╡ 8c7b01a8-6adb-4dc4-8af2-63f982e24ca2
+md""" 
+Interferómetro de Newton: muestra el patrón de interferencia formado un sistema de dos lentes con diferente índice de refracción que es atravesado por una luz coherente monocromática:
+"""
+
+# ╔═╡ 0122b80b-15bc-41c9-860f-b02ff8071d2e
+md""" $(LocalResource("Imagenes/newton.png",:width => 500))"""
+
+# ╔═╡ 529a7833-72c7-4524-918f-33a52adac6e0
+md"""
+Interferómetro de Michelson: muestra el patrón de interferencia formado por un sistema que está compuesto por aperturas, lentes y espejos y que es atravesado por un láser como una fuente de luz temporalmente coherente 
+"""
+
+# ╔═╡ a514b66b-8c7a-44c2-b0fa-63f36d0ff2b0
+md""" $(LocalResource("Imagenes/Shak.png",:width => 500))"""
 
 # ╔═╡ 779667de-9baf-41f6-b58f-3bbfb3188572
 md"""
@@ -1644,8 +1743,16 @@ version = "0.9.1+5"
 # ╟─153109c5-b9a0-4519-8883-36bb5a47268b
 # ╟─839a845c-5f1e-406c-b4e3-ad43988bdb4f
 # ╟─16789574-e24a-4776-8d18-b38623685524
-# ╠═ca305417-d685-4736-b90f-6894c0d307bc
-# ╠═316ea75a-a601-4fa4-a947-4e339b7dd609
+# ╟─ca305417-d685-4736-b90f-6894c0d307bc
+# ╟─93425426-1ff2-4d88-8bda-4596c19ec53f
+# ╟─0025a72e-6ef9-4d8f-a608-91eda2d29c35
+# ╟─10798561-4fdc-4a04-b9c1-fbc163c38f49
+# ╟─af39a45a-35e3-4cf7-a235-f8b0df82f6b1
+# ╟─f2f15596-4e03-46d1-b7ec-0438cabfbfaf
+# ╟─8c7b01a8-6adb-4dc4-8af2-63f982e24ca2
+# ╟─0122b80b-15bc-41c9-860f-b02ff8071d2e
+# ╟─529a7833-72c7-4524-918f-33a52adac6e0
+# ╟─a514b66b-8c7a-44c2-b0fa-63f36d0ff2b0
 # ╠═779667de-9baf-41f6-b58f-3bbfb3188572
 # ╠═f7c7d016-501f-4810-a04f-473ba57fa613
 # ╟─44d99566-5418-41bc-b9e4-b2a93076ae2e
