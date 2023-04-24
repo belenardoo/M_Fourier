@@ -1,0 +1,13 @@
+Aprendizajes de Julia:
+
+Caja verde:
+!!! alert "Titulo Caja"
+
+Caja azul:
+!!! note "Definición de desplazamiento o desfase"
+
+Caja verde ejemplos:
+!!! warning "Ejemplo"
+
+Caja roja:
+!!! danger "Objetivos"

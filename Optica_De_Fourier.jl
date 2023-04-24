@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.22
+# v0.19.25
 
 #> [frontmatter]
 #> author = "Rodrigo F. Cádiz"
@@ -289,9 +289,39 @@ Interferómetro de Michelson: muestra el patrón de interferencia formado por un
 # ╔═╡ a514b66b-8c7a-44c2-b0fa-63f36d0ff2b0
 md""" $(LocalResource("Imagenes/Shak.png",:width => 500))"""
 
+# ╔═╡ 58dd287d-b02a-4d4b-9c38-0f07f7371793
+md"""
+### Difracción por una apertura plana
+Las ecuaciones formuladas en esta sección permitirán entregar las bases para el desarrollo de la óptica de Fourier. Consideremo una pantalla plana infinitamente extendida con una única apertura y asumamos un campo monocromático y plano:
+
+"""
+
+# ╔═╡ 67b088fd-7544-45bd-9eae-5e90fed60c6c
+md""" $(LocalResource("Imagenes/D_2.png",:width => 400))"""
+
+# ╔═╡ f16fabc2-234d-4720-b074-6ffca58dc3fa
+md"""
+Para encontrar el valor del campo eléctrico en el punto $P_0$, aplicamos el teorema integral de Kirchhoff
+
+!!! note "Teorema Integral de Kirchhoff"
+	Para una onda monocromatica que se mueve en el espacio:
+
+	$$U(\boldsymbol{P_0}) = \frac{1}{4\pi} \int_s \left(G\frac{dU}{d\boldsymbol{n}}-U\frac{dG}{d\boldsymbol{n}}\right)d\boldsymbol{s}$$
+
+Para adaptarse al problema es importante tener cuidado de elegir una superficie de integración que permita el cálculo que se realice con éxito. Siguiendo a Kirchhoff, la superficie cerrada S se elige para consta de dos partes, como se muestra en la figura. Sea una superficie plana, S1, situada directamente detrás la pantalla de difracción, esta unida y cerrada por un gran cascarón esférico, S2, de radio R centrado en el punto de observación Po. La superficie cerrada total S es simplemente la suma de S1 y S2
+"""
+
 # ╔═╡ 779667de-9baf-41f6-b58f-3bbfb3188572
 md"""
 ### Aproximación de campo Lejano
+"""
+
+# ╔═╡ e08fb096-37a1-4bb0-b52b-5a2ff640c891
+md"""
+En las aplicaciones en Astronomía se utiliza la difracción de Fraunhoffer o aproximación de campo lejano para modelar el comportamiento de la luz en un sistema óptico.
+
+Caja verde:
+!!! alert "Principio de Fresnel-Huygens"
 """
 
 # ╔═╡ f7c7d016-501f-4810-a04f-473ba57fa613
@@ -1753,7 +1783,11 @@ version = "0.9.1+5"
 # ╟─0122b80b-15bc-41c9-860f-b02ff8071d2e
 # ╟─529a7833-72c7-4524-918f-33a52adac6e0
 # ╟─a514b66b-8c7a-44c2-b0fa-63f36d0ff2b0
-# ╠═779667de-9baf-41f6-b58f-3bbfb3188572
+# ╟─58dd287d-b02a-4d4b-9c38-0f07f7371793
+# ╟─67b088fd-7544-45bd-9eae-5e90fed60c6c
+# ╠═f16fabc2-234d-4720-b074-6ffca58dc3fa
+# ╟─779667de-9baf-41f6-b58f-3bbfb3188572
+# ╠═e08fb096-37a1-4bb0-b52b-5a2ff640c891
 # ╠═f7c7d016-501f-4810-a04f-473ba57fa613
 # ╟─44d99566-5418-41bc-b9e4-b2a93076ae2e
 # ╟─00000000-0000-0000-0000-000000000001
