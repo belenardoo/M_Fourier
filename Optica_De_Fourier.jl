@@ -297,14 +297,22 @@ Las ecuaciones formuladas en esta sección permitirán entregar las bases para e
 """
 
 # ╔═╡ 67b088fd-7544-45bd-9eae-5e90fed60c6c
-md""" $(LocalResource("Imagenes/D_2.png",:width => 400))"""
+md""" $(LocalResource("Imagenes/D_21.png",:width => 400))"""
 
 # ╔═╡ f16fabc2-234d-4720-b074-6ffca58dc3fa
 md"""
-Para encontrar el valor del campo eléctrico en el punto $P_0$, aplicamos la fórmula de Rayleigh-Sommerfeld:
+Para encontrar el valor del campo eléctrico en el punto $\boldsymbol{x'}$, aplicamos la fórmula de Rayleigh-Sommerfeld para la difracción, que es la solución a la ecuación de Helmholtz-Kirchhoff que resuelve el comportamiento escalar de una onda electromagnética:
 
 !!! note "Fórmula de Rayleigh-Sommerfeld"
-	$$ $$
+	$$u\left(\mathbf{x}^{\prime}\right)=\iint_{S} g_D\left(x, y, 0;\mathbf{x}^{\prime}\right) u_{i n}(x, y) d x d y$$	
+	- El campo difractado en $\left(x^{\prime},y^{\prime}, z^{\prime}\right)$, con $z^{\prime}>0$ es $u\left(\mathbf{x}^{\prime}\right)$ 
+	- La apertura $S$ esta en la frontera del medio plano $(z=0)$
+	- El campo incidente en el medio plano de frontera es $u_{i n}(x, y)$
+	- La Función de Green de Dirichlet, con $r=\left|\mathbf{x}^{\prime}-\mathbf{x}\right|$ es 
+
+	$$g_D\left(\mathbf{x} ; \mathbf{x}^{\prime}\right)=-\frac{1}{2 \pi} \frac{z^{\prime}}{r^2}\left(i k_0-\frac{1}{r}\right) e^{i k_0 r}$$
+
+Esta expresión es difícil de trbajar, por lo que se buscan aproximaciones que simplifiquen la expresión.
 """
 
 # ╔═╡ 779667de-9baf-41f6-b58f-3bbfb3188572
