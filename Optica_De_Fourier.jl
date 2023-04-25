@@ -297,7 +297,7 @@ Las ecuaciones formuladas en esta sección permitirán entregar las bases para e
 """
 
 # ╔═╡ 67b088fd-7544-45bd-9eae-5e90fed60c6c
-md""" $(LocalResource("Imagenes/D_21.png",:width => 400))"""
+md""" $(LocalResource("Imagenes/D_3.png",:width => 400))"""
 
 # ╔═╡ f16fabc2-234d-4720-b074-6ffca58dc3fa
 md"""
@@ -312,6 +312,13 @@ Para encontrar el valor del campo eléctrico en el punto $\boldsymbol{x'}$, apli
 
 	$$g_D\left(\mathbf{x} ; \mathbf{x}^{\prime}\right)=-\frac{1}{2 \pi} \frac{z^{\prime}}{r^2}\left(i k_0-\frac{1}{r}\right) e^{i k_0 r}$$
 
+	Por lo tanto el campo en cualquier punto está dado por:
+
+	$$u\left(\mathbf{x}^{\prime}\right)=\iint_{S} -\frac{1}{2 \pi} \frac{z^{\prime}}{r^2}\left(i k_0-\frac{1}{r}\right) e^{i k_0 r} u_{i n}(x, y) d x d y$$
+
+	Considerando que la distribución de campo incidente $u_{i n}(x, y)$ se distribuye uniformemente en el área de la apertura y realizando cambios de variable, es posible re escribir la ecuación de la forma:
+
+	$$u\left(\mathbf{x}^{\prime}\right)=\iint_{S} \frac{a}{R} e^{(i\omega -kr)}ds$$
 Esta expresión es difícil de trbajar, por lo que se buscan aproximaciones que simplifiquen la expresión.
 """
 
@@ -1789,7 +1796,7 @@ version = "0.9.1+5"
 # ╟─a514b66b-8c7a-44c2-b0fa-63f36d0ff2b0
 # ╟─58dd287d-b02a-4d4b-9c38-0f07f7371793
 # ╟─67b088fd-7544-45bd-9eae-5e90fed60c6c
-# ╠═f16fabc2-234d-4720-b074-6ffca58dc3fa
+# ╟─f16fabc2-234d-4720-b074-6ffca58dc3fa
 # ╟─779667de-9baf-41f6-b58f-3bbfb3188572
 # ╠═e08fb096-37a1-4bb0-b52b-5a2ff640c891
 # ╠═f7c7d016-501f-4810-a04f-473ba57fa613
