@@ -301,14 +301,10 @@ md""" $(LocalResource("Imagenes/D_2.png",:width => 400))"""
 
 # ╔═╡ f16fabc2-234d-4720-b074-6ffca58dc3fa
 md"""
-Para encontrar el valor del campo eléctrico en el punto $P_0$, aplicamos el teorema integral de Kirchhoff
+Para encontrar el valor del campo eléctrico en el punto $P_0$, aplicamos la fórmula de Rayleigh-Sommerfeld:
 
-!!! note "Teorema Integral de Kirchhoff"
-	Para una onda monocromatica que se mueve en el espacio:
-
-	$$U(\boldsymbol{P_0}) = \frac{1}{4\pi} \int_s \left(G\frac{dU}{d\boldsymbol{n}}-U\frac{dG}{d\boldsymbol{n}}\right)d\boldsymbol{s}$$
-
-Para adaptarse al problema es importante tener cuidado de elegir una superficie de integración que permita el cálculo que se realice con éxito. Siguiendo a Kirchhoff, la superficie cerrada S se elige para consta de dos partes, como se muestra en la figura. Sea una superficie plana, S1, situada directamente detrás la pantalla de difracción, esta unida y cerrada por un gran cascarón esférico, S2, de radio R centrado en el punto de observación Po. La superficie cerrada total S es simplemente la suma de S1 y S2
+!!! note "Fórmula de Rayleigh-Sommerfeld"
+	$$ $$
 """
 
 # ╔═╡ 779667de-9baf-41f6-b58f-3bbfb3188572
