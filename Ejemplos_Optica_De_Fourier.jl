@@ -16,392 +16,20 @@ using LaTeXStrings, Plots, Random, Images, PlutoUI,DSP,Measures,FFTW
 
 # ╔═╡ 3efd49dd-c556-41bd-8e72-7dae02ecf98e
 md"""
-# Óptica de Fourier
+# Óptica de Fourier - Ejemplos
 """
 
 # ╔═╡ 080876f9-165e-4be0-8344-fb3b600e58c4
 md"""
 !!! danger "Objetivos"
-	En esta sección se estudian sistemas 2D continuos. Los sistemas ópticos son sistemas que actúan en el espacio y el desarrollo de la óptica de Fourier permite analizar cómo se forman imágenes a partir de fuentes luminosas cercanas (difrección de Fresnel) o de fuentes lejanas (difrección de Fraunhoffer) considerando la naturaleza ondulatoria de la luz.
+	En esta sección se estudia la dinámica de sistemas ópticos como un sistema 2D continuo, analizando cómo transforman la luz como onda Electromagnética
 """
 
-# ╔═╡ 68f42c62-04e4-4cd8-ab06-81ae36d429c2
+# ╔═╡ 96ac9874-9fc8-48e9-b92f-bff39b85447f
 md"""
-## Óptica
+## PSF de diferentes funciones
 
-!!! alert "Definición"
-	La óptica es la rama de la física que estudia el comportamiento y las propiedades de la luz, incluidas sus interacciones con la materia, así como la construcción de instrumentos que se sirven de ella o la detectan. Dado que la luz se comporta como onda y como pertícula, es posible desarrollar dos tipos de análisis ópticos: la óptica geométrica estudia las transformaciones de la luz observándola como un rayo y la óptica de Fourier considera la naturaleza ondulatoria de la luz para describir su comportamiento.
-!!! note "Sistemas Ópticos"
-	Los sistemas ópticos son cualquier combinación de objetos que separan medios con distinto índice de refracción que cambian el camino de la luz para formar imagenes. Los sistemas ópticos no cambian la frecuencia temporal de las ondas electromagnéticas que los atraviesan. Existen diferentes aplicaciones, las más comunes son astronomía y microscopía.
-	En astronomía en general los sistemas de adquisición son de la forma:
-"""
-
-# ╔═╡ 3d0dfca8-a2f0-4288-9199-6ebb05d095be
-md""" $(LocalResource("Imagenes/Sistema_Optico.png"))"""
-
-# ╔═╡ 717a0eaf-26dd-45da-bf78-8f49337b6cdd
-md"En este contexto, se puede observar que la luz es una señal que trae informacion de fuentes luminosas y el sistema óptico transforma esta señal para que se pueda interpretar. Dado que el camino de la luz está en el espacio, se puede modelar un sistema óptico como un sistema 2D."
-
-# ╔═╡ 00876874-6d57-4ec3-a4a2-daecdbce568d
-md"""
-## La luz como onda Electromagnética
-
-Para modelar correctamente los sistemas ópticos es fundamental comprender correctamente la naturaleza de las señales que este transforma. El comportamiento de la luz está modelado a partir de las ecuaciones de Maxwell:
-
-!!! note "Ecuaciones de Maxwell en el vacío"
-	$\boldsymbol{\nabla} \cdot \boldsymbol{E} = \frac{\rho}{\epsilon_0} \qquad \boldsymbol{\nabla} \cdot \boldsymbol{B} = 0 \qquad \boldsymbol{\nabla}\times \boldsymbol{E} = -\frac{d\boldsymbol{B}}{dt}\qquad \boldsymbol{\nabla}\times \boldsymbol{B} = \mu_0\boldsymbol{J} +\mu_0\epsilon_0\frac{d\boldsymbol{E}}{dt}$
-Donde $\boldsymbol{E}$ es el vector campo eléctrico, $\boldsymbol{B}$ es el vector campo magnético, $\rho$ es la densidad de carga en el espacio, $t$ es el tiempo, $\epsilon_0$ es la permitividad eléctrica del vacío, $\boldsymbol{J}$ es el venctor densidad de corriente y $\mu_0$ es la permeabilidad eléctrica del vacío.
-
-Si nos situamos en el vacío, en una zona libre de cargas (y por lo tanto de corrientes) se pueden expresar las ecuaciones de Maxwell como:
-
-
-!!! note "Ecuaciones de Maxwell en el vacío sin cargas ni corrientes"
-	$\boldsymbol{\nabla} \cdot \boldsymbol{E} = 0 \qquad \boldsymbol{\nabla} \cdot \boldsymbol{B} = 0 \qquad \boldsymbol{\nabla}\times \boldsymbol{E} = -\frac{d\boldsymbol{B}}{dt}\qquad \boldsymbol{\nabla}\times \boldsymbol{B} = \mu_0\epsilon_0\frac{d\boldsymbol{E}}{dt}$
-
-A partir de estas ecuaciones es posible demostrar la naturaleza ondulatoria de la luz. 
-
-Aplicamos rotacional a la ley de Faraday-Lenz $\left( \boldsymbol{\nabla}\times \boldsymbol{E} = -\frac{d\boldsymbol{B}}{dt} \right)$:
-
-$$\boldsymbol{\nabla}\times \left(\boldsymbol{\nabla}\times \boldsymbol{E}\right) = \boldsymbol{\nabla}\times\left(-\frac{d\boldsymbol{B}}{dt}\right)$$
-
-Por propiedades de los operadores diferenciales del problema tenemos:
-
-Para el rotacional del rotacional:
-
-$$\boldsymbol{\nabla}\times \left(\boldsymbol{\nabla}\times \boldsymbol{E}\right) = \boldsymbol{\nabla}\left(\boldsymbol{\nabla}\cdot\boldsymbol{E} \right)-\boldsymbol{\nabla}^2\boldsymbol{E}$$
-
-Para el rotacional de la derivada:
-
-$$\boldsymbol{\nabla}\times\left(-\frac{d\boldsymbol{B}}{dt}\right) = -\frac{d\left(\boldsymbol{\nabla}\times\boldsymbol{B} \right)}{dt}$$
-
-Re escribiendo el rotacional de la ley de Faraday-Lenz:
-
-$$-\frac{d\left(\boldsymbol{\nabla}\times\boldsymbol{B} \right)}{dt} = \boldsymbol{\nabla}\left(\boldsymbol{\nabla}\cdot\boldsymbol{E} \right)-\boldsymbol{\nabla}^2\boldsymbol{E}$$
-
-Para continuar el análisis recordamos la ley de Gauss en el vacío:
-
-$$\boldsymbol{\nabla}\cdot\boldsymbol{E} = 0$$
-
-A partir de esto:
-
-$$\frac{d\left(\boldsymbol{\nabla}\times\boldsymbol{B} \right)}{dt} =\boldsymbol{\nabla}^2\boldsymbol{E}$$
-
-Ahora reemplazo el rotacional del campo magnético del la ley de Ampere $\left( \boldsymbol{\nabla}\times \boldsymbol{B} = \mu_0\epsilon_0\frac{d\boldsymbol{E}}{dt}\right)$
-
-$$\frac{d}{dt}\left(\mu_0\epsilon_0\frac{d\boldsymbol{E}}{dt}\right) =\boldsymbol{\nabla}^2\boldsymbol{E}$$
-
-Dado que la derivada es un operador lineal se obtiene:
-
-
-$$\mu_0\epsilon_0\frac{d^2\boldsymbol{E}}{dt^2}=\boldsymbol{\nabla}^2\boldsymbol{E}$$
-
-**Esta es una ecuación de onda, lo que indica que el campo eléctrico en el vacío se mueve como una onda de velocidad** $\mathbf{c=\sqrt{\frac{1}{\mu_0\epsilon_0}}\approx 3\cdot 10^8 \left[ \frac{m}{s}\right]}$
-
-Análogo a este procedimiento, tomando rotacional a la ley de Ampere $\left( \boldsymbol{\nabla}\times \boldsymbol{B} = \mu_0\epsilon_0\frac{d\boldsymbol{E}}{dt}\right)$ es posible demostrar que el campo magnérico en el vacío se comporta de la forma:
-$$\mu_0\epsilon_0\frac{d^2\boldsymbol{B}}{dt^2}=\boldsymbol{\nabla}^2\boldsymbol{B}$$
-
-**Esta es una ecuación de onda, lo que indica que el campo eléctrico en el vacío se mueve como una onda de velocidad** $\mathbf{c=\sqrt{\frac{1}{\mu_0\epsilon_0}}\approx 3\cdot 10^8 \left[ \frac{m}{s}\right]}$
-
-!!! alert "Ecuaciones de onda electromagnética"
-	$\mu_0\epsilon_0\frac{d^2\boldsymbol{E}}{dt^2}=\boldsymbol{\nabla}^2\boldsymbol{E} \qquad \mu_0\epsilon_0\frac{d^2\boldsymbol{B}}{dt^2}=\boldsymbol{\nabla}^2\boldsymbol{B}$
-!!! note "Solución a la Ecuación de onda electromagnética"
-	$\boldsymbol{E}(\boldsymbol{r},t) = E_0e^{i(\boldsymbol{k}\cdot\boldsymbol{r}-\omega t)}\boldsymbol{\hat{n}} \qquad \boldsymbol{B}(\boldsymbol{r},t) = B_0e^{i(\boldsymbol{k}\cdot\boldsymbol{r}-\omega t)}\boldsymbol{\hat{k}}\times \boldsymbol{\hat{n}}$
-El campo eléctrico y el campo magnetico son transversales en el vacío, y la luz se mueve como una onda plana. En este contexto, el vector $\boldsymbol{r}$ corresponde a la posición de un punto en el espacio. Por su parte $\omega$ es la frecuencia angular de la onda y $\lambda$ la longitud de onda. El vector $\boldsymbol{k}$ corresponde al número de onda $\boldsymbol{k} = \frac{2\pi}{\lambda}\boldsymbol{\hat{k}}$ y $\boldsymbol{\hat{n}}$ es el vector de polarización.
-
-!!! warning "Irradiancia"
-	Se define como l iluminación de un objeto y se calcula de la forma:
-
-	$$I=\left\|\boldsymbol{E}\right\|^2$$
-"""
-
-# ╔═╡ a8c002c8-9568-473e-9748-33f9e675f736
-md"""
-## Óptica Geométrica
-"""
-
-# ╔═╡ 104177b7-d499-448d-9076-552d9e3dcf9f
-md"""
-!!! alert "Definición"
-	En este análisis físico se considera que la luz es una onda que se refleja y se refracta, ambos fenómenos están basados en el principio de Fermat. **La óptica geométrica es válida cuando la longitud de onda de la luz que atraviesa el sistema óptico es de mucho menor tamaño que los elementos que componen sistema**, ya que modela el comportamiento de la luz como un rayo.
-"""
-
-# ╔═╡ 2d0a2079-79e8-4ae8-ad99-9e10ed7a40f0
-md"""
-!!! note "Principio de Fermat"
-	*El camino recorrido entre dos puntos por un rayo de luz es el camino que se puede atravesar en el menor tiempo posible*
-"""
-
-# ╔═╡ 669b37f5-631c-4ad5-b4db-c0472fce93d4
-md"""
-### Reflexión
-"""
-
-# ╔═╡ ed4170bd-32c7-4cf7-aac7-5f0e87d6b780
-md"""
-Cuando un rayo de luz se refleja, el ángulo de incidencia respecto a la normal es igual al ángulo reflejado respecto a la normal 
-"""
-
-# ╔═╡ d6e549d3-e43d-42f2-af3c-d2d3e060f83f
-md""" $(LocalResource("Imagenes/Espejo_plano.png",:width => 400))"""
-
-# ╔═╡ 2745abb7-0b29-4fc2-9035-e68954ad4bed
-md"""
-### Refracción
-"""
-
-# ╔═╡ 43b46c18-1454-4e31-b74a-3771e8cadcdb
-md"""
-La refracción es el cambio de dirección de propagación que experimentan las ondas cuando pasan de un medio a otro. 
-
-"""
-
-# ╔═╡ c791ea1e-9317-43b3-a9ad-662eee8d0d01
-md""" $(LocalResource("Imagenes/refraccion.png",:width => 400))"""
-
-# ╔═╡ 2a92ae22-391d-4f76-ad46-5dc28d24baa3
-md"""
-!!! note "Ley de Snell"
-	$n_1\sin(i) = n_2\sin(r)$
-Donde $n_1$ es el índice de refracción del medio 1 y $n_2$ es el índice de refracción del medio 2. El índice de refracción mide cuanto cambia la velocidad de la luz en un medio ($v$) respecto a la velocidad de la luz en el vacío($c$):
-
-$$n = \frac{c}{v}$$
-"""
-
-# ╔═╡ 153109c5-b9a0-4519-8883-36bb5a47268b
-md"""
-!!! danger "Observación"
-	En el contexto de la óptica geométrica se desarrollan instrumentos ópticos como telescopios y microscopios operando en base a espejos y lentes esféricos. La óptica geométrica puede explicar aberraciones ópticas como aberración esférica, curvatura de campo, astigmatismo, coma y aberración cromática. Sin embargo, observando la luz como un rayo no es posible explicar por qué cuando observamos a a través de un sistema óptico dos fuentes puntuales monocromáticas sólo somos capaces de diferenciar que son dos fuentes y no confundirlas con una sola cuando la distancia entre las fuentes es mayor a una distancia específica para cada sistema óptico. Este problema lo resuelve la óptica ondulatoria.
-"""
-
-# ╔═╡ 839a845c-5f1e-406c-b4e3-ad43988bdb4f
-md"""
-## Óptica Ondulatoria
-"""
-
-# ╔═╡ 16789574-e24a-4776-8d18-b38623685524
-md"""
-!!! alert "Definición"
-	En este análisis físico se considera que la luz es una onda que se refleja y se refracta, pero también se considera que se **difracta**, lo que permite un análisis más exacto de lo que ocurre con la luz al pasar por una apertura antes de entrar a un sistema óptico
-"""
-
-# ╔═╡ ca305417-d685-4736-b90f-6894c0d307bc
-md"""
-!!! note "Difracción"
-	Es un fenómeno ondulatorio de desviación de la dirección de propagación de una onda desde su trayectoria rectilínea que no pueden interpretarse como reflexión o refracción. Consiste en la desviación de ondas alrededor de las esquinas de un obstáculo o a través de una abertura. Esta se produce cuando la onda al atravesar un obstáculo transparente u opaco cambia su magnitud o su fase. 
-"""
-
-# ╔═╡ 93425426-1ff2-4d88-8bda-4596c19ec53f
-md""" $(LocalResource("Imagenes/Difraccion.png",:width => 400))"""
-
-# ╔═╡ 0025a72e-6ef9-4d8f-a608-91eda2d29c35
-md"""
-!!! alert "Patron de Difracción"
-	Los segmentos de frente de onda que logran atravesar la apertura interfieren entre sí, lo que genera que se produzcan secciones más luminosas (la interferencia es positiva, las ondas que interfieren están en fase y se suman) y secciones oscuras (la interferencia es negativa, las ondas que están en contra fase se suman y la suma da cero).
-"""
-
-# ╔═╡ 10798561-4fdc-4a04-b9c1-fbc163c38f49
-begin
-	
-	gr(size=(700,400))
-	anim = @animate for n = 1:1:2 # numero de terminos
-		L2 = 1
-		odds = collect(1:2:2*n)
-		points = 1000
-		x= collect(LinRange(0, 2, points))
-		fx = zeros(points)
-		bn = zeros(2*n)
-		
-	    p1 = plot(x, x .* 0, title = L"\textrm{Ondas\; difractadas}", xlabel = L"t", legend = false, titlefontsize = 10)
-	
-		p2 = plot(x, 0*x, title = L"\textrm{Superposicion}", xlabel = L"t", legend = false, titlefontsize = 10)
-	
-		p = plot(p1, p2, layout = (1, 2))
-		k=1
-		for odd in odds
-			if k%2 == 0
-				y =  sin.(pi .* (x ./ L2))
-			else
-				y =  -sin.(pi .* (x ./ L2))
-			end
-			fx .+= y
-			plot!(p[1], y, framestyle=:origin, linewidth=1, xticks = ([0, 500, 1000], [L"0", L"L", L"2L"]))
-			k=k+1
-			
-		end
-	
-		plot!(p[2], fx,  framestyle=:origin, linewidth=3, xticks = ([0, 500, 1000], [L"0", L"L", L"2L"]))
-	end
-
-	gif(anim,fps=1,show_msg=false)
-		
-end
-
-# ╔═╡ af39a45a-35e3-4cf7-a235-f8b0df82f6b1
-begin
-	
-	gr(size=(700,400))
-	anima = @animate for n = 1:1:2 # numero de terminos
-		L2 = 1
-		odds = collect(1:2:2*n)
-		points = 1000
-		x= collect(LinRange(0, 2, points))
-		fx = zeros(points)
-		bn = zeros(2*n)
-		
-	    p1 = plot(x, x .* 0, title = L"\textrm{Ondas\; difractadas}", xlabel = L"t", legend = false, titlefontsize = 10)
-	
-		p2 = plot(x, 0*x, title = L"\textrm{Superposicion}", xlabel = L"t", legend = false, titlefontsize = 10)
-	
-		p = plot(p1, p2, layout = (1, 2))
-		k=1
-		for odd in odds
-			if k%2 == 0
-				y =  sin.(pi .* (x ./ L2))
-			else
-				y =  0.5sin.(pi .* (x ./ L2))
-			end
-			fx .+= y
-			plot!(p[1], y, framestyle=:origin, linewidth=1, xticks = ([0, 500, 1000], [L"0", L"L", L"2L"]))
-			k=k+1
-			
-		end
-	
-		plot!(p[2], fx,  framestyle=:origin, linewidth=3, xticks = ([0, 500, 1000], [L"0", L"L", L"2L"]))
-	end
-
-	gif(anima,fps=1,show_msg=false)
-		
-end
-
-# ╔═╡ f2f15596-4e03-46d1-b7ec-0438cabfbfaf
-md"""
-A continuación se muestran imágenes de dos tipos de patrones de difracción observados en laboratorio.
-"""
-
-# ╔═╡ 8c7b01a8-6adb-4dc4-8af2-63f982e24ca2
-md""" 
-Interferómetro de Newton: muestra el patrón de interferencia formado un sistema de dos lentes con diferente índice de refracción que es atravesado por una luz coherente monocromática:
-"""
-
-# ╔═╡ 0122b80b-15bc-41c9-860f-b02ff8071d2e
-md""" $(LocalResource("Imagenes/newton.png",:width => 500))"""
-
-# ╔═╡ 529a7833-72c7-4524-918f-33a52adac6e0
-md"""
-Interferómetro de Michelson: muestra el patrón de interferencia formado por un sistema que está compuesto por aperturas, lentes y espejos y que es atravesado por un láser como una fuente de luz temporalmente coherente 
-"""
-
-# ╔═╡ a514b66b-8c7a-44c2-b0fa-63f36d0ff2b0
-md""" $(LocalResource("Imagenes/Shak.png",:width => 500))"""
-
-# ╔═╡ 58dd287d-b02a-4d4b-9c38-0f07f7371793
-md"""
-### Difracción por una apertura plana
-Las ecuaciones formuladas en esta sección permitirán entregar las bases para el desarrollo de la óptica de Fourier. Consideremo una pantalla plana infinitamente extendida con una única apertura y asumamos un campo monocromático y plano:
-
-"""
-
-# ╔═╡ 67b088fd-7544-45bd-9eae-5e90fed60c6c
-md""" $(LocalResource("Imagenes/D_4.png",:width => 400))"""
-
-# ╔═╡ f16fabc2-234d-4720-b074-6ffca58dc3fa
-md"""
-Para encontrar el valor del campo eléctrico en el punto $\boldsymbol{x'}$, aplicamos la fórmula de Rayleigh-Sommerfeld para la difracción, que es la solución a la ecuación de Helmholtz-Kirchhoff que resuelve el comportamiento escalar de una onda electromagnética:
-
-!!! note "Fórmula de Rayleigh-Sommerfeld"
-	$$u\left(\mathbf{x}^{\prime}\right)=\iint_{S} g_D\left(x, y, 0;\mathbf{x}^{\prime}\right) u_{i n}(x, y) d x d y$$	
-	- El campo difractado en $\left(x^{\prime},y^{\prime}, z^{\prime}\right)$, con $z^{\prime}>0$ es $u\left(\mathbf{x}^{\prime}\right)$ 
-	- La apertura $S$ esta en la frontera del medio plano $(z=0)$
-	- El campo incidente en el medio plano de frontera es $u_{i n}(x, y)$
-	- La Función de Green de Dirichlet, con $r=\left|\mathbf{x}^{\prime}-\mathbf{x}\right|$ es 
-
-	$$g_D\left(\mathbf{x} ; \mathbf{x}^{\prime}\right)=-\frac{1}{2 \pi} \frac{z^{\prime}}{r^2}\left(i k_0-\frac{1}{r}\right) e^{i k_0 r}$$
-
-	Por lo tanto el campo en cualquier punto está dado por:
-
-	$$u\left(\mathbf{x}^{\prime}\right)=\iint_{S} -\frac{1}{2 \pi} \frac{z^{\prime}}{r^2}\left(i k_0-\frac{1}{r}\right) e^{i k_0 r} u_{i n}(x, y) d x d y$$
-
-	Considerando que la distribución de campo incidente $u_{i n}(x, y)$ se distribuye uniformemente en el área de la apertura y realizando cambios de variable, es posible re escribir la ecuación de la forma:
-
-	$$u\left(\mathbf{x}^{\prime}\right)=\iint_{S} \frac{a}{R} e^{i(\omega -kr)}ds$$
-Esta expresión es difícil de trbajar, por lo que se buscan aproximaciones que simplifiquen la expresión.
-"""
-
-# ╔═╡ 779667de-9baf-41f6-b58f-3bbfb3188572
-md"""
-### Aproximación de campo Lejano
-"""
-
-# ╔═╡ e08fb096-37a1-4bb0-b52b-5a2ff640c891
-md"""
-En las aplicaciones en Astronomía se utiliza la difracción de Fraunhoffer o aproximación de campo lejano para modelar el comportamiento de la luz en un sistema óptico. En este contexto se toma en cuenta que las fuentes luminosas se encuentran muy alejadas de el sistema óptico.
-
-!!! alert "Aproximación de Fraunhoffer"
-	Cuando la fuente de campo es lejana al sistema óptico, es posible decir que $\boldsymbol{R}>>d$ donde $d$ es el diámetro de la apertura y $R$ es la distancia del centro de la apertura al punto. Tenemos:
-
-	$$R = \sqrt{x'^2+y'^2+z'^2} \qquad r=\sqrt{(x-x')^2+(y-y')^2+(z-z')^2}$$
-
-	Desarrollamos los cuadrados de binomio en r:
-
-	$$r = \sqrt{x^2-2xx'+x'^2+y^2-2yy'+y'^2+z'^2}$$
-
-	Ahora reescribimos considerando que $R^2=x'^2+y'^2+z'^2$:
-
-	$$r = \sqrt{R^2+(x'^2+y'^2)-2(xx'+yy')}$$
-
-	Factorizando por $R^2$:
-
-	$$r = R\sqrt{1+\frac{x'^2+y'^2}{R^2}-2\frac{xx'+yy'}{R^2}}$$
-
-	Aplicando aproximación de campo lejano queda:
-
-	$$r\approx R\left[1-\frac{xx'+yy'}{R^2}\right]$$
-
-	Finalmente, aplicando a la formula de Rayleigh:
-
-	$$u\left(\mathbf{x}^{\prime}\right)=\iint_{S} \frac{a}{R} e^{i(\omega -kr)}ds \quad \rightarrow \quad u\left(\mathbf{x}^{\prime}\right)=\iint_{S} \frac{a}{R} e^{i(\omega -kR\left[1-\frac{xx'+yy'}{R^2}\right])}ds$$
-
-	Desarrollando las propiedades de las potencias:
-
-	$$u\left(\mathbf{x}^{\prime}\right)= \iint_{S} \frac{a}{R} e^{i(\omega -kR)}e^{ik\frac{xx'+yy'}{R}}ds$$
-
-	La expresión $\frac{a}{R} e^{i(\omega -kR)}$ corresponde a una parametrización de la apertura de superficie $S$ que genera la difracción, la llamaremos $A(x,y)$ por lo que:
-
-	$$u\left(\mathbf{x}^{\prime}\right)= \int_{-\infty}^{\infty} \int_{-\infty}^{\infty}A(x,y)e^{ik\frac{xx'+yy'}{R}}dxdy$$
-
-	Podemos observar que **en aproximación de campo lejano, el valor del campo eléctrico en un punto ($\mathbf{x'}$,$\mathbf{y'}$) corresponde a la Transformada de Fourier 2D aplicada a la función apertura evaluada en las variables de frecuencia $\left(\mathbf{\frac{kx'}{R}},\mathbf{\frac{ky'}{R}}\right)$**
-"""
-
-# ╔═╡ f7c7d016-501f-4810-a04f-473ba57fa613
-md"""
-#### Respuesta al impulso
-Es posible modelar los sistemas ópticos como sistemas LTI, ya que se observa experimentalmente que no cambian la frecuencia de las ondas que los atraviesan. De esta forma, **cuando se forma una imagen producto de las ondas que vienen de un objeto luminoso y atraviesan una apertura, la iluminación de la imágen es la convolución entre la iluminación del ojeto y la respuesta al impulso del sistema**
-
-!!! note "PSF"
-	En los sistemas 2D a la respuesta al impulso se le llama *Piont Spread Function* (PSF) en un sistema óptico se tiene que:
-
-	$$PSF = \left\|u\right\|^2 \quad \rightarrow \quad PSF = \left\|\mathcal{F}\left\{A(x,y)\right\}\left(\mathbf{\frac{kx'}{R}},\mathbf{\frac{ky'}{R}}\right)\right\|^2$$
-
-!!! warning "OTF"
-
-	En óptica para medir las características de un sistema en general en lugar de utilizar la PSF se utiliza la *Optical Transfer Function* (OTF) que corresponde a la transformada de Fourier d la PSF:
-
-	$$OTF = \mathcal{F}\left\{PSF\right\}$$
-
-	Utilizando propiedad de la convolución de la transformada de Fourier y dualidad asuminedo que las aperturas siempre serán siméticas es posible definir la OTF como la autoconvolución de la función apertura:
-
-	$$OTF = \left\{A*A\right\}(k_x,k_y)$$
-
-	Dado que la OTF es un número complejo, esta se puede descomponer en magnitud y fase dando origen a dos funciones nuevas: *Modulation Transfer Function* (MTF) y *Phase Transfer Function* (PTF)
-
-	$$OTF = MTFe^{iPTF}$$
-
-	En este contexto es posible observar a los sistemas ópticos como un filtro de frecuencias espaciales.
-"""
-
-# ╔═╡ f09f3cb9-a0c7-406c-82da-7c7235ca96b0
-md"""
-A continuación se muestra una apertura cuadrada, su PSF y MTF
+En esta sección se muestra la respuesta al impulso para diferentes tipos de apretura
 """
 
 # ╔═╡ 567733eb-acca-4421-be9a-01ea66d3a33a
@@ -409,22 +37,28 @@ begin
 	gr(size=(800,600), legend=false)
 	rect(x) = abs(x) < 0.5 ? 1 : 0;
 	gx = -2.5:0.1:2.5;
-	rect2D1(x,y) = rect(x/3)*rect(y/3);
+	rect2D1(x,y) = rect(2*x)*rect(2*y);
+	circ2D(x,y) = rect(2*sqrt(x^2+y^2));
+	im4 = circ2D.(gx,gx')
 	im1 = rect2D1.(gx,gx');
 	im2 = rect2D1.(gx,gx');
 	rconv = conv(im1,im2);
-	r3 = 
+	rconvcirc = conv(im4,im4);
 	pim1 = surface(im1, c=:inferno, legend=:none,
 	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="x",ylabel="y",xticks=(0:10:50, string.(-25:10:25)),yticks=(0:10:50, string.(-25:10:25)),title="Apertura Cuadrada",margin=5mm)
 
-	pconv1 = surface(rconv, c=:inferno, legend=:none,
-	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="x",ylabel="y",xticks=(0:20:100, string.(-50:20:50)),yticks=(0:20:100, string.(-50:20:50)),title="MTF",margin=5mm)
+	pim2 = surface(im4, c=:inferno, legend=:none,
+	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="x",ylabel="y",xticks=(0:10:50),yticks=(0:10:50),title="Apertura Circular",margin=5mm)
 	
 	fftim0 = abs.(fftshift(fft(rconv)))
+	fftim2 = abs.(fftshift(fft(rconvcirc)))
+	pconv0 = surface(fftim0, c=:greens, legend=:none,
+	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel=L"k_x",ylabel=L"k_y",title="PSF Apertura Cuadrada",axis=nothing,framestyle=:none)
 
-	pconv2 = surface(fftim0, c=:greens, legend=:none,
-	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel=L"k_x",ylabel=L"k_y",title="PSF",axis=nothing,framestyle=:none)
-	plot!(pim1, pconv2, pconv1, layout=(2,2)) 
+	pconv2 = surface(fftim2, c=:greens, legend=:none,
+	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel=L"k_x",ylabel=L"k_y",title="PSF Apertura Circular",axis=nothing,framestyle=:none)
+
+	plot!(pim1, pconv0,pim2,pconv2, layout=(2,2)) 
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1916,41 +1550,8 @@ version = "1.4.1+0"
 # ╔═╡ Cell order:
 # ╟─3efd49dd-c556-41bd-8e72-7dae02ecf98e
 # ╟─080876f9-165e-4be0-8344-fb3b600e58c4
-# ╟─68f42c62-04e4-4cd8-ab06-81ae36d429c2
-# ╟─3d0dfca8-a2f0-4288-9199-6ebb05d095be
-# ╟─717a0eaf-26dd-45da-bf78-8f49337b6cdd
-# ╟─00876874-6d57-4ec3-a4a2-daecdbce568d
-# ╟─a8c002c8-9568-473e-9748-33f9e675f736
-# ╟─104177b7-d499-448d-9076-552d9e3dcf9f
-# ╟─2d0a2079-79e8-4ae8-ad99-9e10ed7a40f0
-# ╟─669b37f5-631c-4ad5-b4db-c0472fce93d4
-# ╟─ed4170bd-32c7-4cf7-aac7-5f0e87d6b780
-# ╟─d6e549d3-e43d-42f2-af3c-d2d3e060f83f
-# ╟─2745abb7-0b29-4fc2-9035-e68954ad4bed
-# ╟─43b46c18-1454-4e31-b74a-3771e8cadcdb
-# ╟─c791ea1e-9317-43b3-a9ad-662eee8d0d01
-# ╟─2a92ae22-391d-4f76-ad46-5dc28d24baa3
-# ╟─153109c5-b9a0-4519-8883-36bb5a47268b
-# ╟─839a845c-5f1e-406c-b4e3-ad43988bdb4f
-# ╟─16789574-e24a-4776-8d18-b38623685524
-# ╟─ca305417-d685-4736-b90f-6894c0d307bc
-# ╟─93425426-1ff2-4d88-8bda-4596c19ec53f
-# ╟─0025a72e-6ef9-4d8f-a608-91eda2d29c35
-# ╟─10798561-4fdc-4a04-b9c1-fbc163c38f49
-# ╟─af39a45a-35e3-4cf7-a235-f8b0df82f6b1
-# ╟─f2f15596-4e03-46d1-b7ec-0438cabfbfaf
-# ╟─8c7b01a8-6adb-4dc4-8af2-63f982e24ca2
-# ╟─0122b80b-15bc-41c9-860f-b02ff8071d2e
-# ╟─529a7833-72c7-4524-918f-33a52adac6e0
-# ╟─a514b66b-8c7a-44c2-b0fa-63f36d0ff2b0
-# ╟─58dd287d-b02a-4d4b-9c38-0f07f7371793
-# ╟─67b088fd-7544-45bd-9eae-5e90fed60c6c
-# ╟─f16fabc2-234d-4720-b074-6ffca58dc3fa
-# ╟─779667de-9baf-41f6-b58f-3bbfb3188572
-# ╟─e08fb096-37a1-4bb0-b52b-5a2ff640c891
-# ╟─f7c7d016-501f-4810-a04f-473ba57fa613
-# ╟─f09f3cb9-a0c7-406c-82da-7c7235ca96b0
-# ╟─567733eb-acca-4421-be9a-01ea66d3a33a
+# ╟─96ac9874-9fc8-48e9-b92f-bff39b85447f
+# ╠═567733eb-acca-4421-be9a-01ea66d3a33a
 # ╟─44d99566-5418-41bc-b9e4-b2a93076ae2e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
