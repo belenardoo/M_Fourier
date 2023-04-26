@@ -1,369 +1,452 @@
 ### A Pluto.jl notebook ###
-# v0.19.22
+# v0.19.25
 
 #> [frontmatter]
 #> author = "Rodrigo F. Cádiz"
-#> title = "Pares de Fourier 2D"
-#> date = "2022-07-31"
+#> title = "Transformaciones de señales"
+#> date = "2022-07-24"
 #> tags = ["Señales y sistemas"]
 #> description = "Pluto Notebook"
 
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ ddb299ef-40b3-426e-be08-92d5de2fc969
-using LaTeXStrings, PlutoUI,Plots,FFTW,Measures
+# ╔═╡ 44d99566-5418-41bc-b9e4-b2a93076ae2e
+using LaTeXStrings, Plots, Random, Images, PlutoUI,DSP,Measures,FFTW
 
-# ╔═╡ adc9ed77-9ab1-4703-8054-0d6f6bb7b405
+# ╔═╡ 3efd49dd-c556-41bd-8e72-7dae02ecf98e
 md"""
-!!! danger ""
-    Este notebook es parte de una colección de apuntes para los cursos **IEE2103 Señales y Sistemas**, **IEE3702 Procesamiento Avanzado de Señales** y **IEE3732 Procesamiento Digital de Señales**, [Departamento de Ingeniería Eléctrica](https://www.ing.uc.cl/electrica/), [Pontificia Universidad Católica de Chile](https://www.uc.cl). 
-
-	**Profesor: Rodrigo F. Cádiz** - Consultas y comentarios: [rcadiz@ing.puc.cl](mailto://rcadiz@ing.puc.cl)
+# Óptica de Fourier
 """
 
-# ╔═╡ 4dc05c97-8a7e-4ad3-b56b-020c505c731a
+# ╔═╡ 080876f9-165e-4be0-8344-fb3b600e58c4
 md"""
-!!! warning ""
-	[[Volver a la tabla de contenidos](index.jl.html)]
+!!! danger "Objetivos"
+	En esta sección se estudian sistemas 2D continuos. Los sistemas ópticos son sistemas que actúan en el espacio y el desarrollo de la óptica de Fourier permite analizar cómo se forman imágenes a partir de fuentes luminosas cercanas (difrección de Fresnel) o de fuentes lejanas (difrección de Fraunhoffer) considerando la naturaleza ondulatoria de la luz.
 """
 
-# ╔═╡ a7e26d36-4f3d-4184-821b-39cd2ae197b9
+# ╔═╡ 68f42c62-04e4-4cd8-ab06-81ae36d429c2
 md"""
-# Pares de Fourier en $\mathbb{R}^2$
+## Óptica
+
+!!! alert "Definición"
+	La óptica es la rama de la física que estudia el comportamiento y las propiedades de la luz, incluidas sus interacciones con la materia, así como la construcción de instrumentos que se sirven de ella o la detectan. Dado que la luz se comporta como onda y como pertícula, es posible desarrollar dos tipos de análisis ópticos: la óptica geométrica estudia las transformaciones de la luz observándola como un rayo y la óptica de Fourier considera la naturaleza ondulatoria de la luz para describir su comportamiento.
+!!! note "Sistemas Ópticos"
+	Los sistemas ópticos son cualquier combinación de objetos que separan medios con distinto índice de refracción que cambian el camino de la luz para formar imagenes. Los sistemas ópticos no cambian la frecuencia temporal de las ondas electromagnéticas que los atraviesan. Existen diferentes aplicaciones, las más comunes son astronomía y microscopía.
+	En astronomía en general los sistemas de adquisición son de la forma:
 """
 
-# ╔═╡ f1a51f87-e806-4f64-b50d-7afc08fa6550
+# ╔═╡ 3d0dfca8-a2f0-4288-9199-6ebb05d095be
+md""" $(LocalResource("Imagenes/Sistema_Optico.png"))"""
+
+# ╔═╡ 717a0eaf-26dd-45da-bf78-8f49337b6cdd
+md"En este contexto, se puede observar que la luz es una señal que trae informacion de fuentes luminosas y el sistema óptico transforma esta señal para que se pueda interpretar. Dado que el camino de la luz está en el espacio, se puede modelar un sistema óptico como un sistema 2D."
+
+# ╔═╡ 00876874-6d57-4ec3-a4a2-daecdbce568d
 md"""
-A continuación, se muestran y grafican algunos de los pares de Fourier en $\mathbb{R}^2$ más relevantes.
+## La luz como onda Electromagnética
+
+Para modelar correctamente los sistemas ópticos es fundamental comprender correctamente la naturaleza de las señales que este transforma. El comportamiento de la luz está modelado a partir de las ecuaciones de Maxwell:
+
+!!! note "Ecuaciones de Maxwell en el vacío"
+	$\boldsymbol{\nabla} \cdot \boldsymbol{E} = \frac{\rho}{\epsilon_0} \qquad \boldsymbol{\nabla} \cdot \boldsymbol{B} = 0 \qquad \boldsymbol{\nabla}\times \boldsymbol{E} = -\frac{d\boldsymbol{B}}{dt}\qquad \boldsymbol{\nabla}\times \boldsymbol{B} = \mu_0\boldsymbol{J} +\mu_0\epsilon_0\frac{d\boldsymbol{E}}{dt}$
+Donde $\boldsymbol{E}$ es el vector campo eléctrico, $\boldsymbol{B}$ es el vector campo magnético, $\rho$ es la densidad de carga en el espacio, $t$ es el tiempo, $\epsilon_0$ es la permitividad eléctrica del vacío, $\boldsymbol{J}$ es el venctor densidad de corriente y $\mu_0$ es la permeabilidad eléctrica del vacío.
+
+Si nos situamos en el vacío, en una zona libre de cargas (y por lo tanto de corrientes) se pueden expresar las ecuaciones de Maxwell como:
+
+
+!!! note "Ecuaciones de Maxwell en el vacío sin cargas ni corrientes"
+	$\boldsymbol{\nabla} \cdot \boldsymbol{E} = 0 \qquad \boldsymbol{\nabla} \cdot \boldsymbol{B} = 0 \qquad \boldsymbol{\nabla}\times \boldsymbol{E} = -\frac{d\boldsymbol{B}}{dt}\qquad \boldsymbol{\nabla}\times \boldsymbol{B} = \mu_0\epsilon_0\frac{d\boldsymbol{E}}{dt}$
+
+A partir de estas ecuaciones es posible demostrar la naturaleza ondulatoria de la luz. 
+
+Aplicamos rotacional a la ley de Faraday-Lenz $\left( \boldsymbol{\nabla}\times \boldsymbol{E} = -\frac{d\boldsymbol{B}}{dt} \right)$:
+
+$$\boldsymbol{\nabla}\times \left(\boldsymbol{\nabla}\times \boldsymbol{E}\right) = \boldsymbol{\nabla}\times\left(-\frac{d\boldsymbol{B}}{dt}\right)$$
+
+Por propiedades de los operadores diferenciales del problema tenemos:
+
+Para el rotacional del rotacional:
+
+$$\boldsymbol{\nabla}\times \left(\boldsymbol{\nabla}\times \boldsymbol{E}\right) = \boldsymbol{\nabla}\left(\boldsymbol{\nabla}\cdot\boldsymbol{E} \right)-\boldsymbol{\nabla}^2\boldsymbol{E}$$
+
+Para el rotacional de la derivada:
+
+$$\boldsymbol{\nabla}\times\left(-\frac{d\boldsymbol{B}}{dt}\right) = -\frac{d\left(\boldsymbol{\nabla}\times\boldsymbol{B} \right)}{dt}$$
+
+Re escribiendo el rotacional de la ley de Faraday-Lenz:
+
+$$-\frac{d\left(\boldsymbol{\nabla}\times\boldsymbol{B} \right)}{dt} = \boldsymbol{\nabla}\left(\boldsymbol{\nabla}\cdot\boldsymbol{E} \right)-\boldsymbol{\nabla}^2\boldsymbol{E}$$
+
+Para continuar el análisis recordamos la ley de Gauss en el vacío:
+
+$$\boldsymbol{\nabla}\cdot\boldsymbol{E} = 0$$
+
+A partir de esto:
+
+$$\frac{d\left(\boldsymbol{\nabla}\times\boldsymbol{B} \right)}{dt} =\boldsymbol{\nabla}^2\boldsymbol{E}$$
+
+Ahora reemplazo el rotacional del campo magnético del la ley de Ampere $\left( \boldsymbol{\nabla}\times \boldsymbol{B} = \mu_0\epsilon_0\frac{d\boldsymbol{E}}{dt}\right)$
+
+$$\frac{d}{dt}\left(\mu_0\epsilon_0\frac{d\boldsymbol{E}}{dt}\right) =\boldsymbol{\nabla}^2\boldsymbol{E}$$
+
+Dado que la derivada es un operador lineal se obtiene:
+
+
+$$\mu_0\epsilon_0\frac{d^2\boldsymbol{E}}{dt^2}=\boldsymbol{\nabla}^2\boldsymbol{E}$$
+
+**Esta es una ecuación de onda, lo que indica que el campo eléctrico en el vacío se mueve como una onda de velocidad** $\mathbf{c=\sqrt{\frac{1}{\mu_0\epsilon_0}}\approx 3\cdot 10^8 \left[ \frac{m}{s}\right]}$
+
+Análogo a este procedimiento, tomando rotacional a la ley de Ampere $\left( \boldsymbol{\nabla}\times \boldsymbol{B} = \mu_0\epsilon_0\frac{d\boldsymbol{E}}{dt}\right)$ es posible demostrar que el campo magnérico en el vacío se comporta de la forma:
+$$\mu_0\epsilon_0\frac{d^2\boldsymbol{B}}{dt^2}=\boldsymbol{\nabla}^2\boldsymbol{B}$$
+
+**Esta es una ecuación de onda, lo que indica que el campo eléctrico en el vacío se mueve como una onda de velocidad** $\mathbf{c=\sqrt{\frac{1}{\mu_0\epsilon_0}}\approx 3\cdot 10^8 \left[ \frac{m}{s}\right]}$
+
+!!! alert "Ecuaciones de onda electromagnética"
+	$\mu_0\epsilon_0\frac{d^2\boldsymbol{E}}{dt^2}=\boldsymbol{\nabla}^2\boldsymbol{E} \qquad \mu_0\epsilon_0\frac{d^2\boldsymbol{B}}{dt^2}=\boldsymbol{\nabla}^2\boldsymbol{B}$
+!!! note "Solución a la Ecuación de onda electromagnética"
+	$\boldsymbol{E}(\boldsymbol{r},t) = E_0e^{i(\boldsymbol{k}\cdot\boldsymbol{r}-\omega t)}\boldsymbol{\hat{n}} \qquad \boldsymbol{B}(\boldsymbol{r},t) = B_0e^{i(\boldsymbol{k}\cdot\boldsymbol{r}-\omega t)}\boldsymbol{\hat{k}}\times \boldsymbol{\hat{n}}$
+El campo eléctrico y el campo magnetico son transversales en el vacío, y la luz se mueve como una onda plana. En este contexto, el vector $\boldsymbol{r}$ corresponde a la posición de un punto en el espacio. Por su parte $\omega$ es la frecuencia angular de la onda y $\lambda$ la longitud de onda. El vector $\boldsymbol{k}$ corresponde al número de onda $\boldsymbol{k} = \frac{2\pi}{\lambda}\boldsymbol{\hat{k}}$ y $\boldsymbol{\hat{n}}$ es el vector de polarización.
+
+!!! warning "Irradiancia"
+	Se define como l iluminación de un objeto y se calcula de la forma:
+
+	$$I=\left\|\boldsymbol{E}\right\|^2$$
 """
 
-# ╔═╡ 9dd788c5-af04-430b-ad33-df622318e763
+# ╔═╡ a8c002c8-9568-473e-9748-33f9e675f736
 md"""
-## $1$ y $\delta$
+## Óptica Geométrica
+"""
 
-!!! note ""
-	$1(x,y) \xrightarrow{\mathcal{F}} \delta$
+# ╔═╡ 104177b7-d499-448d-9076-552d9e3dcf9f
+md"""
+!!! alert "Definición"
+	En este análisis físico se considera que la luz es una onda que se refleja y se refracta, ambos fenómenos están basados en el principio de Fermat. **La óptica geométrica es válida cuando la longitud de onda de la luz que atraviesa el sistema óptico es de mucho menor tamaño que los elementos que componen sistema**, ya que modela el comportamiento de la luz como un rayo.
+"""
+
+# ╔═╡ 2d0a2079-79e8-4ae8-ad99-9e10ed7a40f0
+md"""
+!!! note "Principio de Fermat"
+	*El camino recorrido entre dos puntos por un rayo de luz es el camino que se puede atravesar en el menor tiempo posible*
+"""
+
+# ╔═╡ 669b37f5-631c-4ad5-b4db-c0472fce93d4
+md"""
+### Reflexión
+"""
+
+# ╔═╡ ed4170bd-32c7-4cf7-aac7-5f0e87d6b780
+md"""
+Cuando un rayo de luz se refleja, el ángulo de incidencia respecto a la normal es igual al ángulo reflejado respecto a la normal 
+"""
+
+# ╔═╡ d6e549d3-e43d-42f2-af3c-d2d3e060f83f
+md""" $(LocalResource("Imagenes/Espejo_plano.png",:width => 400))"""
+
+# ╔═╡ 2745abb7-0b29-4fc2-9035-e68954ad4bed
+md"""
+### Refracción
+"""
+
+# ╔═╡ 43b46c18-1454-4e31-b74a-3771e8cadcdb
+md"""
+La refracción es el cambio de dirección de propagación que experimentan las ondas cuando pasan de un medio a otro. 
 
 """
 
-# ╔═╡ a990a6d7-02f9-4031-abcd-6c829d1b7c55
-begin 
-	gr(size=(800,300), legend=false)
-	uno(x,y) = 1
-	gx = -3.5:0.1:3.5
-	im0 = uno.(gx,gx')
-	fftim0 = abs.(fftshift(fft(Float64.(Gray.(im0)))))
+# ╔═╡ c791ea1e-9317-43b3-a9ad-662eee8d0d01
+md""" $(LocalResource("Imagenes/refraccion.png",:width => 400))"""
 
-	pim0 = surface(im0, c=:inferno, legend=:none,
-  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="x",ylabel="y",title=L"\mathbb{1}(x,y)",axis=nothing,zlim=(0,2),framestyle=:semi)
-	
-	pfftim0 = surface(fftim0, c=:greens, legend=:none,
-  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="u",ylabel="v",title=L"\mathcal{F}\{\mathbb{1}(x,y)\} = \delta",axis=nothing,framestyle=:none)
-	
-	plot!(pim0, pfftim0,layout=(1,2))	
-
-end
-
-# ╔═╡ 636ff0e7-03cf-4e1a-94c5-11c5bb51e0ee
+# ╔═╡ 2a92ae22-391d-4f76-ad46-5dc28d24baa3
 md"""
-## Impulsos de línea
+!!! note "Ley de Snell"
+	$n_1\sin(i) = n_2\sin(r)$
+Donde $n_1$ es el índice de refracción del medio 1 y $n_2$ es el índice de refracción del medio 2. El índice de refracción mide cuanto cambia la velocidad de la luz en un medio ($v$) respecto a la velocidad de la luz en el vacío($c$):
 
-!!! note ""
-	$\delta_x \xrightarrow{\mathcal{F}} \delta_v$
+$$n = \frac{c}{v}$$
 """
 
-# ╔═╡ 76b8ac77-a7b3-42c5-a5b0-0e50ddc2656b
+# ╔═╡ 153109c5-b9a0-4519-8883-36bb5a47268b
+md"""
+!!! danger "Observación"
+	En el contexto de la óptica geométrica se desarrollan instrumentos ópticos como telescopios y microscopios operando en base a espejos y lentes esféricos. La óptica geométrica puede explicar aberraciones ópticas como aberración esférica, curvatura de campo, astigmatismo, coma y aberración cromática. Sin embargo, observando la luz como un rayo no es posible explicar por qué cuando observamos a a través de un sistema óptico dos fuentes puntuales monocromáticas sólo somos capaces de diferenciar que son dos fuentes y no confundirlas con una sola cuando la distancia entre las fuentes es mayor a una distancia específica para cada sistema óptico. Este problema lo resuelve la óptica ondulatoria.
+"""
+
+# ╔═╡ 839a845c-5f1e-406c-b4e3-ad43988bdb4f
+md"""
+## Óptica Ondulatoria
+"""
+
+# ╔═╡ 16789574-e24a-4776-8d18-b38623685524
+md"""
+!!! alert "Definición"
+	En este análisis físico se considera que la luz es una onda que se refleja y se refracta, pero también se considera que se **difracta**, lo que permite un análisis más exacto de lo que ocurre con la luz al pasar por una apertura antes de entrar a un sistema óptico
+"""
+
+# ╔═╡ ca305417-d685-4736-b90f-6894c0d307bc
+md"""
+!!! note "Difracción"
+	Es un fenómeno ondulatorio de desviación de la dirección de propagación de una onda desde su trayectoria rectilínea que no pueden interpretarse como reflexión o refracción. Consiste en la desviación de ondas alrededor de las esquinas de un obstáculo o a través de una abertura. Esta se produce cuando la onda al atravesar un obstáculo transparente u opaco cambia su magnitud o su fase. 
+"""
+
+# ╔═╡ 93425426-1ff2-4d88-8bda-4596c19ec53f
+md""" $(LocalResource("Imagenes/Difraccion.png",:width => 400))"""
+
+# ╔═╡ 0025a72e-6ef9-4d8f-a608-91eda2d29c35
+md"""
+!!! alert "Patron de Difracción"
+	Los segmentos de frente de onda que logran atravesar la apertura interfieren entre sí, lo que genera que se produzcan secciones más luminosas (la interferencia es positiva, las ondas que interfieren están en fase y se suman) y secciones oscuras (la interferencia es negativa, las ondas que están en contra fase se suman y la suma da cero).
+"""
+
+# ╔═╡ 10798561-4fdc-4a04-b9c1-fbc163c38f49
 begin
-	gr(size=(800,400), legend=false)
-	delta(x) = x==0 ? 1 : 0
-	line2Dx(x,y) = delta(x)
-	line2Dy(x,y) = delta(y)
-	pline1 = surface(-1:0.01:1, -1:0.1:1, line2Dx, c=:inferno, legend=:none,
-  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="x",ylabel="y",zlim=[0,1],xaxis=[0],yaxis=[0],zaxis=[0], framestyle=:origin, title=L"\delta_x",margin=5mm)
-	pline2 = surface(-1:0.1:1, -1:0.01:1, line2Dy, c=:greens, legend=:none,
-  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="u",ylabel="v",zlim=[0,1],xaxis=[0],yaxis=[0],zaxis=[0], framestyle=:origin, title=L"\delta_v",margin=5mm)
-	plot!(pline1,pline2,layout=(1,2))
-end
-
-# ╔═╡ fccae648-7b0b-4a90-938b-c73f867487cf
-md"""
-
-!!! note ""
-	$\delta_y \xrightarrow{\mathcal{F}} \delta_u$
-
-"""
-
-# ╔═╡ 13729830-9442-4da6-bc27-425759701a88
-begin
-	gr(size=(800,400), legend=false)
-	pline3 = surface(-1:0.1:1, -1:0.01:1, line2Dy, c=:inferno, legend=:none,
-  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="x",ylabel="y",zlim=[0,1],xaxis=[0],yaxis=[0],zaxis=[0], framestyle=:origin, title=L"\delta_y",margin=5mm)
-	pline4 = surface(-1:0.01:1, -1:0.1:1, line2Dx, c=:greens, legend=:none,
-  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="u",ylabel="v",zlim=[0,1],xaxis=[0],yaxis=[0],zaxis=[0], framestyle=:origin, title=L"\delta_u",margin=5mm)
-	plot!(pline3,pline4,layout=(1,2))
-end
-
-# ╔═╡ 4672a17d-46ec-4bec-848a-41f37dafd957
-md"""
-## Exponencial compleja
-!!! note ""
-	$e^{i 2\pi(ax + by)} \xrightarrow{\mathcal{F}}  \delta_{a,b}$
-"""
-
-# ╔═╡ d96cd57f-fda9-46a4-bd23-fcb5ea94eca7
-begin 
-	gr(size=(800,300), legend=false)
-
-	anim1 = @animate for fea in -2:0.5:2, feb in -2:0.5:2
-		
-		exp2D(x,y) = exp(2im*pi*(fea*x+feb*y))
-		im5 = (exp2D.(gx',gx))
-		fftim5 = abs.(fftshift(fft(Complex.(im5))))
 	
-		prim5 = surface(real.(im5), c=:inferno, legend=:none,
-	  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 65), xlabel="x",ylabel="y",title=L"\oper{Re}(e^{i2\pi(%$(fea)x+%$(feb)y)})",axis=nothing,framestyle=:semi)
+	gr(size=(700,400))
+	anim = @animate for n = 1:1:2 # numero de terminos
+		L2 = 1
+		odds = collect(1:2:2*n)
+		points = 1000
+		x= collect(LinRange(0, 2, points))
+		fx = zeros(points)
+		bn = zeros(2*n)
 		
-		piim5 = surface(imag.(im5), c=:inferno, legend=:none,
-	  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 65), xlabel="x",ylabel="y",title=L"\oper{Im}(e^{i2\pi(%$(fea)x+%$(feb)y)})",axis=nothing,framestyle=:semi)
-		
-		pfftim5 = surface(fftim5, c=:greens, legend=:none,
-	  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 65), xlabel="u",ylabel="v",title=L"\mathcal{F}\{e^{i2\pi(%$(fea)x+%$(feb)y)})\}(u,v)",axis=nothing,framestyle=:none)
-		
-		plot!(prim5, piim5, pfftim5,layout=(1,3))	
+	    p1 = plot(x, x .* 0, title = L"\textrm{Ondas\; difractadas}", xlabel = L"t", legend = false, titlefontsize = 10)
+	
+		p2 = plot(x, 0*x, title = L"\textrm{Superposicion}", xlabel = L"t", legend = false, titlefontsize = 10)
+	
+		p = plot(p1, p2, layout = (1, 2))
+		k=1
+		for odd in odds
+			if k%2 == 0
+				y =  sin.(pi .* (x ./ L2))
+			else
+				y =  -sin.(pi .* (x ./ L2))
+			end
+			fx .+= y
+			plot!(p[1], y, framestyle=:origin, linewidth=1, xticks = ([0, 500, 1000], [L"0", L"L", L"2L"]))
+			k=k+1
+			
+		end
+	
+		plot!(p[2], fx,  framestyle=:origin, linewidth=3, xticks = ([0, 500, 1000], [L"0", L"L", L"2L"]))
 	end
-	gif(anim1,fps=2,show_msg=false)
 
+	gif(anim,fps=1,show_msg=false)
+		
 end
 
-# ╔═╡ d374b20b-c7b1-438b-a31e-fd00d9b04625
-md"""
-## Rect y sinc
+# ╔═╡ af39a45a-35e3-4cf7-a235-f8b0df82f6b1
+begin
+	
+	gr(size=(700,400))
+	anima = @animate for n = 1:1:2 # numero de terminos
+		L2 = 1
+		odds = collect(1:2:2*n)
+		points = 1000
+		x= collect(LinRange(0, 2, points))
+		fx = zeros(points)
+		bn = zeros(2*n)
+		
+	    p1 = plot(x, x .* 0, title = L"\textrm{Ondas\; difractadas}", xlabel = L"t", legend = false, titlefontsize = 10)
+	
+		p2 = plot(x, 0*x, title = L"\textrm{Superposicion}", xlabel = L"t", legend = false, titlefontsize = 10)
+	
+		p = plot(p1, p2, layout = (1, 2))
+		k=1
+		for odd in odds
+			if k%2 == 0
+				y =  sin.(pi .* (x ./ L2))
+			else
+				y =  0.5sin.(pi .* (x ./ L2))
+			end
+			fx .+= y
+			plot!(p[1], y, framestyle=:origin, linewidth=1, xticks = ([0, 500, 1000], [L"0", L"L", L"2L"]))
+			k=k+1
+			
+		end
+	
+		plot!(p[2], fx,  framestyle=:origin, linewidth=3, xticks = ([0, 500, 1000], [L"0", L"L", L"2L"]))
+	end
 
-!!! note ""
-	$\sqcap(x,y) \xrightarrow{\mathcal{F}}  \text{sinc}(u,v)$
+	gif(anima,fps=1,show_msg=false)
+		
+end
+
+# ╔═╡ f2f15596-4e03-46d1-b7ec-0438cabfbfaf
+md"""
+A continuación se muestran imágenes de dos tipos de patrones de difracción observados en laboratorio.
 """
 
-# ╔═╡ c380009a-4f2e-4a61-909f-49427fe8356a
-begin 
-	gr(size=(800,300), legend=false)
-	rect(x) = abs(x) < 0.5 ? 1 : 0
-	rect2D(x,y) = rect(x)*rect(y)
+# ╔═╡ 8c7b01a8-6adb-4dc4-8af2-63f982e24ca2
+md""" 
+Interferómetro de Newton: muestra el patrón de interferencia formado un sistema de dos lentes con diferente índice de refracción que es atravesado por una luz coherente monocromática:
+"""
 
-	im1 = rect2D.(gx,gx')
-	fftim1 = abs.(fftshift(fft(Float64.(Gray.(im1)))))
+# ╔═╡ 0122b80b-15bc-41c9-860f-b02ff8071d2e
+md""" $(LocalResource("Imagenes/newton.png",:width => 500))"""
 
+# ╔═╡ 529a7833-72c7-4524-918f-33a52adac6e0
+md"""
+Interferómetro de Michelson: muestra el patrón de interferencia formado por un sistema que está compuesto por aperturas, lentes y espejos y que es atravesado por un láser como una fuente de luz temporalmente coherente 
+"""
+
+# ╔═╡ a514b66b-8c7a-44c2-b0fa-63f36d0ff2b0
+md""" $(LocalResource("Imagenes/Shak.png",:width => 500))"""
+
+# ╔═╡ 58dd287d-b02a-4d4b-9c38-0f07f7371793
+md"""
+### Difracción por una apertura plana
+Las ecuaciones formuladas en esta sección permitirán entregar las bases para el desarrollo de la óptica de Fourier. Consideremo una pantalla plana infinitamente extendida con una única apertura y asumamos un campo monocromático y plano:
+
+"""
+
+# ╔═╡ 67b088fd-7544-45bd-9eae-5e90fed60c6c
+md""" $(LocalResource("Imagenes/D_4.png",:width => 400))"""
+
+# ╔═╡ f16fabc2-234d-4720-b074-6ffca58dc3fa
+md"""
+Para encontrar el valor del campo eléctrico en el punto $\boldsymbol{x'}$, aplicamos la fórmula de Rayleigh-Sommerfeld para la difracción, que es la solución a la ecuación de Helmholtz-Kirchhoff que resuelve el comportamiento escalar de una onda electromagnética:
+
+!!! note "Fórmula de Rayleigh-Sommerfeld"
+	$$u\left(\mathbf{x}^{\prime}\right)=\iint_{S} g_D\left(x, y, 0;\mathbf{x}^{\prime}\right) u_{i n}(x, y) d x d y$$	
+	- El campo difractado en $\left(x^{\prime},y^{\prime}, z^{\prime}\right)$, con $z^{\prime}>0$ es $u\left(\mathbf{x}^{\prime}\right)$ 
+	- La apertura $S$ esta en la frontera del medio plano $(z=0)$
+	- El campo incidente en el medio plano de frontera es $u_{i n}(x, y)$
+	- La Función de Green de Dirichlet, con $r=\left|\mathbf{x}^{\prime}-\mathbf{x}\right|$ es 
+
+	$$g_D\left(\mathbf{x} ; \mathbf{x}^{\prime}\right)=-\frac{1}{2 \pi} \frac{z^{\prime}}{r^2}\left(i k_0-\frac{1}{r}\right) e^{i k_0 r}$$
+
+	Por lo tanto el campo en cualquier punto está dado por:
+
+	$$u\left(\mathbf{x}^{\prime}\right)=\iint_{S} -\frac{1}{2 \pi} \frac{z^{\prime}}{r^2}\left(i k_0-\frac{1}{r}\right) e^{i k_0 r} u_{i n}(x, y) d x d y$$
+
+	Considerando que la distribución de campo incidente $u_{i n}(x, y)$ se distribuye uniformemente en el área de la apertura y realizando cambios de variable, es posible re escribir la ecuación de la forma:
+
+	$$u\left(\mathbf{x}^{\prime}\right)=\iint_{S} \frac{a}{R} e^{i(\omega -kr)}ds$$
+Esta expresión es difícil de trbajar, por lo que se buscan aproximaciones que simplifiquen la expresión.
+"""
+
+# ╔═╡ 779667de-9baf-41f6-b58f-3bbfb3188572
+md"""
+### Aproximación de campo Lejano
+"""
+
+# ╔═╡ e08fb096-37a1-4bb0-b52b-5a2ff640c891
+md"""
+En las aplicaciones en Astronomía se utiliza la difracción de Fraunhoffer o aproximación de campo lejano para modelar el comportamiento de la luz en un sistema óptico. En este contexto se toma en cuenta que las fuentes luminosas se encuentran muy alejadas de el sistema óptico.
+
+!!! alert "Aproximación de Fraunhoffer"
+	Cuando la fuente de campo es lejana al sistema óptico, es posible decir que $\boldsymbol{R}>>d$ donde $d$ es el diámetro de la apertura y $R$ es la distancia del centro de la apertura al punto. Tenemos:
+
+	$$R = \sqrt{x'^2+y'^2+z'^2} \qquad r=\sqrt{(x-x')^2+(y-y')^2+(z-z')^2}$$
+
+	Desarrollamos los cuadrados de binomio en r:
+
+	$$r = \sqrt{x^2-2xx'+x'^2+y^2-2yy'+y'^2+z'^2}$$
+
+	Ahora reescribimos considerando que $R^2=x'^2+y'^2+z'^2$:
+
+	$$r = \sqrt{R^2+(x'^2+y'^2)-2(xx'+yy')}$$
+
+	Factorizando por $R^2$:
+
+	$$r = R\sqrt{1+\frac{x'^2+y'^2}{R^2}-2\frac{xx'+yy'}{R^2}}$$
+
+	Aplicando aproximación de campo lejano queda:
+
+	$$r\approx R\left[1-\frac{xx'+yy'}{R^2}\right]$$
+
+	Finalmente, aplicando a la formula de Rayleigh:
+
+	$$u\left(\mathbf{x}^{\prime}\right)=\iint_{S} \frac{a}{R} e^{i(\omega -kr)}ds \quad \rightarrow \quad u\left(\mathbf{x}^{\prime}\right)=\iint_{S} \frac{a}{R} e^{i(\omega -kR\left[1-\frac{xx'+yy'}{R^2}\right])}ds$$
+
+	Desarrollando las propiedades de las potencias:
+
+	$$u\left(\mathbf{x}^{\prime}\right)= \iint_{S} \frac{a}{R} e^{i(\omega -kR)}e^{ik\frac{xx'+yy'}{R}}ds$$
+
+	La expresión $\frac{a}{R} e^{i(\omega -kR)}$ corresponde a una parametrización de la apertura de superficie $S$ que genera la difracción, la llamaremos $A(x,y)$ por lo que:
+
+	$$u\left(\mathbf{x}^{\prime}\right)= \int_{-\infty}^{\infty} \int_{-\infty}^{\infty}A(x,y)e^{ik\frac{xx'+yy'}{R}}dxdy$$
+
+	Podemos observar que **en aproximación de campo lejano, el valor del campo eléctrico en un punto ($\mathbf{x'}$,$\mathbf{y'}$) corresponde a la Transformada de Fourier 2D aplicada a la función apertura evaluada en las variables de frecuencia $\left(\mathbf{\frac{kx'}{R}},\mathbf{\frac{ky'}{R}}\right)$**
+"""
+
+# ╔═╡ f7c7d016-501f-4810-a04f-473ba57fa613
+md"""
+#### Respuesta al impulso
+Es posible modelar los sistemas ópticos como sistemas LTI, ya que se observa experimentalmente que no cambian la frecuencia de las ondas que los atraviesan. De esta forma, **cuando se forma una imagen producto de las ondas que vienen de un objeto luminoso y atraviesan una apertura, la iluminación de la imágen es la convolución entre la iluminación del ojeto y la respuesta al impulso del sistema**
+
+!!! note "PSF"
+	En los sistemas 2D a la respuesta al impulso se le llama *Piont Spread Function* (PSF) en un sistema óptico se tiene que:
+
+	$$PSF = \left\|u\right\|^2 \quad \rightarrow \quad PSF = \left\|\mathcal{F}\left\{A(x,y)\right\}\left(\mathbf{\frac{kx'}{R}},\mathbf{\frac{ky'}{R}}\right)\right\|^2$$
+
+!!! warning "OTF"
+
+	En óptica para medir las características de un sistema en general en lugar de utilizar la PSF se utiliza la *Optical Transfer Function* (OTF) que corresponde a la transformada de Fourier d la PSF:
+
+	$$OTF = \mathcal{F}\left\{PSF\right\}$$
+
+	Utilizando propiedad de la convolución de la transformada de Fourier y dualidad asuminedo que las aperturas siempre serán siméticas es posible definir la OTF como la autoconvolución de la función apertura:
+
+	$$OTF = \left\{A*A\right\}(k_x,k_y)$$
+
+	Dado que la OTF es un número complejo, esta se puede descomponer en magnitud y fase dando origen a dos funciones nuevas: *Modulation Transfer Function* (MTF) y *Phase Transfer Function* (PTF)
+
+	$$OTF = MTFe^{iPTF}$$
+
+	En este contexto es posible observar a los sistemas ópticos como un filtro de frecuencias espaciales.
+"""
+
+# ╔═╡ f09f3cb9-a0c7-406c-82da-7c7235ca96b0
+md"""
+A continuación se muestra una apertura cuadrada, su PSF y MTF
+"""
+
+# ╔═╡ 567733eb-acca-4421-be9a-01ea66d3a33a
+begin
+	gr(size=(800,600), legend=false)
+	rect(x) = abs(x) < 0.5 ? 1 : 0;
+	gx = -2.5:0.1:2.5;
+	rect2D1(x,y) = rect(x/3)*rect(y/3);
+	im1 = rect2D1.(gx,gx');
+	im2 = rect2D1.(gx,gx');
+	rconv = conv(im1,im2);
+	r3 = 
 	pim1 = surface(im1, c=:inferno, legend=:none,
-  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 65), xlabel="x",ylabel="y",title=L"\sqcap(x,y)",axis=nothing,framestyle=:none)
-	
-	pfftim1 = surface(fftim1, c=:greens, legend=:none,
-  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 65), xlabel="u",ylabel="v",title=L"\mathcal{F}\{\sqcap(x,y)\} = \mathrm{sinc}(u,v)",axis=nothing,framestyle=:none)
-	
-	plot!(pim1, pfftim1,layout=(1,2))	
+	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="x",ylabel="y",xticks=(0:10:50, string.(-25:10:25)),yticks=(0:10:50, string.(-25:10:25)),title="Apertura Cuadrada",margin=5mm)
 
+	pconv1 = surface(rconv, c=:inferno, legend=:none,
+	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="x",ylabel="y",xticks=(0:20:100, string.(-50:20:50)),yticks=(0:20:100, string.(-50:20:50)),title="MTF",margin=5mm)
+	
+	fftim0 = abs.(fftshift(fft(rconv)))
+
+	pconv2 = surface(fftim0, c=:greens, legend=:none,
+	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel=L"k_x",ylabel=L"k_y",title="PSF",axis=nothing,framestyle=:none)
+	plot!(pim1, pconv2, pconv1, layout=(2,2)) 
 end
-
-# ╔═╡ 0a1de841-1518-43b5-b7ce-4399f007ed59
-md"""
-## Sinusoides
-"""
-
-# ╔═╡ b31602f8-a53b-4d33-b7d7-cfd4f946168b
-md"""
-!!! note ""
-	$\cos(2\pi ax) \xrightarrow{\mathcal{F}} \frac{1}{2}(\delta_{a,0}+\delta_{-a,0})$
-
-!!! note ""
-	$\cos(2\pi by) \xrightarrow{\mathcal{F}} \frac{1}{2}(\delta_{0,b}+\delta_{0,-b})$
-
-"""
-
-# ╔═╡ 153a9e6d-998c-4637-be1f-c99321e1d9d3
-begin 
-	gr(size=(800,300), legend=false)
-
-	anim2 = @animate for fa in 0:1:3, fb in 0:1:3
-		cos2D(x,y) = cos(pi*(fa*x+fb*y))
-		im2 = cos2D.(gx',gx)
-		fftim2 = abs.(fftshift(fft(Float64.(im2))))
-	
-		pim2 = surface(im2, c=:inferno, legend=:none,
-	  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 65), xlabel="x",ylabel="y",title=L"\cos(\pi (%$(fa)x + %$(fb)y))",axis=nothing,framestyle=:none)
-		
-		pfftim2 = surface(fftim2, c=:greens, legend=:none,
-	  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 65), xlabel="u",ylabel="v",title=L"\mathcal{F}\{\cos(\pi (%$(fa)x + %$(fb)y)\}(u,v)",axis=nothing,framestyle=:none)
-		
-		plot!(pim2, pfftim2,layout=(1,2))	
-	end
-
-	gif(anim2,fps=2,show_msg=false)
-
-end
-
-# ╔═╡ eada7863-de1f-40a7-8330-7a4aa17ab1e2
-begin 
-	gr(size=(800,300), legend=false)
-	anim3 = @animate for fa in 0:1:3, fb in 0:1:3
-		sinus2D(x,y) = cos(fa*pi*x)*cos(fb*pi*y)
-		gx2 = -2.5:0.1:2.5
-		im23= sinus2D.(gx',gx)
-		fftim23 = abs.(fftshift(fft(Float64.(Gray.(im23)))))
-	
-		pim23 = surface(im23, c=:inferno, legend=:none,
-	  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 65), xlabel="x",ylabel="y",title=L"\cos(%$(fa)\pi x)\cos(%$(fb)\pi y)",axis=nothing,framestyle=:none)
-		
-		pfftim23 = surface(fftim23, c=:greens, legend=:none,
-	  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 65), xlabel="u",ylabel="v",title=L"\mathcal{F}\{\cos(%$(fa)\pi x)\cos(%$(fb)\pi y))\}(u,v)",axis=nothing,framestyle=:none)
-		
-		plot!(pim23, pfftim23,layout=(1,2))	
-	end
-	gif(anim3,fps=2,show_msg=false)
-
-end
-
-# ╔═╡ e8100835-e42b-4643-9595-14aa6f6cb1bf
-md"""
-## Gauss
-
-!!! note ""
-	$\mathrm{Gauss}(x,y) \xrightarrow{\mathcal{F}} \mathrm{Gauss}(u,v)$
-"""
-
-# ╔═╡ a8b8880c-4a2f-45e8-a6fe-6a7e5bb3a3bd
-begin 
-	gr(size=(800,300), legend=false)
-	gauss2D(x,y) = exp(-pi*(x^2+y^2))
-	im3 = gauss2D.(gx',gx)
-	fftim3 = abs.(fftshift(fft(Float64.(Gray.(im3)))))
-
-	pim3 = surface(im3, c=:inferno, legend=:none,
-  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 65), xlabel="x",ylabel="y",title=L"\mathrm{Gauss}(x,y)",axis=nothing,framestyle=:none)
-	
-	pfftim3 = surface(fftim3, c=:greens, legend=:none,
-  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 65), xlabel="u",ylabel="v",title=L"\mathcal{F}\{\mathrm{Gauss}\}(u,v)\ = \mathrm{Gauss}(u,v)",axis=nothing,framestyle=:none)
-	
-	plot!(pim3, pfftim3,layout=(1,2))	
-
-end
-
-# ╔═╡ dacea6a3-e721-4547-98c9-a546608687df
-md"""
-## Circ y jinc
-
-!!! note ""
-	$\text{circ}(x,y) \xrightarrow{\mathcal{F}} \text{jinc}(u,v)$
-"""
-
-# ╔═╡ 2f8db0cc-cf1f-4131-8e61-73f5556c7ca2
-begin 
-	gr(size=(800,300), legend=false)
-	circ2D(x,y) = rect(sqrt(x^2+y^2)*2)
-	im4 = circ2D.(gx',gx)
-	fftim4 = abs.(fftshift(fft(Float64.(Gray.(im4)))))
-
-	pim4 = surface(im4, c=:inferno, legend=:none,
-  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 65), xlabel="x",ylabel="y",title=L"\mathrm{circ}(x,y)",axis=nothing,framestyle=:none)
-	
-	pfftim4 = surface(fftim4, c=:greens, legend=:none,
-  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 65), xlabel="u",ylabel="v",title=L"\mathcal{F}\{\mathrm{circ}\}(u,v) = \mathrm{jinc}(u,v)",axis=nothing,framestyle=:none)
-	
-	plot!(pim4, pfftim4,layout=(1,2))	
-
-end
-
-# ╔═╡ 3aba74da-cb95-445c-a4f5-993a492471e9
-md"""
-## Signo
-
-!!! note ""
-	$\mathrm{sgn}(x,y) \xrightarrow{\mathcal{F}} \frac{1}{\pi^2 u v}$
-"""
-
-# ╔═╡ 3a58f424-3fd4-4287-8146-29b1db7f7c3c
-begin 
-	gr(size=(800,300), legend=false)
-	gx3 = -1.5:0.07:1.5
-	sign(x) = x > 0 ? 1 : -1
-	sign2D(x,y) = sign(x)*sign(y)
-	inv2D(x,y) = 1/((pi*pi*x*y)+0.0000000001)
-	im10 = sign2D.(gx3',gx3)
-	fftim10 = inv2D.(gx3',gx3)
-
-	pim10 = surface(im10, c=:inferno, legend=:none,
-  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="x",ylabel="y",title=L"\mathrm{sgn}(x,y)",axis=nothing,framestyle=:semi,yticks=(-1,1))
-	
-	pfftim10 = surface(fftim10, c=:greens, legend=:none,
-  nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="u",ylabel="v",title=L"\mathcal{F}\{\mathrm{sgn}\}(u,v) = \frac{1}{\pi^2 u v}",axis=nothing,framestyle=:none)
-	
-	plot!(pim10, pfftim10,layout=(1,2))	
-
-end
-
-# ╔═╡ 801dca06-4e58-4374-b9c0-6e31a052003a
-md"""
-## Distribución de muestreo Shah
-
-!!! note ""
-	${\bot \!\! \bot \!\! \bot} \xrightarrow{\mathcal{F}}  {\bot \!\! \bot \!\! \bot}$ 
-"""
-
-# ╔═╡ 3efe3a6e-db77-4d91-ac42-08ccbbfde403
-begin
-	gr(size=(800,500))
-	p1=plot()	
-	for i in -8:4:8
-		for j in -8:4:8
-		plot!([i],[j],[1],seriestype=:stem, markersize = 7, marker=:utriangle,xlim=[-10,10],ylim=[-10,10],zlim=[0,2],legend=false,xaxis=[0],yaxis=[0],zaxis=[0], framestyle=:origin,xlabel="y",ylabel="x",title=L"{\bot \!\! \bot \!\! \bot}",camera=(55,65),c=:orange)
-		end
-	end
-	p2=plot()	
-	for i in -8:4:8
-		for j in -8:4:8
-		plot!([i],[j],[1],seriestype=:stem, markersize = 7, marker=:utriangle,xlim=[-10,10],ylim=[-10,10],zlim=[0,2],legend=false,xaxis=[0],yaxis=[0],zaxis=[0], framestyle=:origin,xlabel="v",ylabel="u",title=L"{\bot \!\! \bot \!\! \bot}",camera=(55,65),c=:green)
-		end
-	end
-	plot!(p1,p2,layout=(1,2))
-end
-
-# ╔═╡ 4ffb687c-e619-49a2-8269-fbbcbb4e4155
-md"""
-!!! warning ""
-	[[Volver a la tabla de contenidos](index.jl.html)]
-"""
-
-# ╔═╡ 94717d14-4b74-483a-b614-3960e8e74071
-md"""
-***
-!!! footer "Licencia"
-	Estos apuntes están licenciados bajo la licencia [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/). 
-
-	**Como citar: Rodrigo F. Cádiz, Notebooks de Señales y Sistemas, 2022.**
-"""
-
-# ╔═╡ 4a689ecc-a25d-4dd2-ba30-87fe348525bd
-md"""
-!!! danger "Colaboradores y referencias"
-	Estos apuntes han contado con la colaboración de Magdalena Araya y Fabián Cádiz. Parte del contenido está basado en apuntes de clases de Pablo Irarrázaval y en las siguientes [referencias bibliográficas](Referencias.jl.html).
-"""
-
-# ╔═╡ a94dae85-dcaa-4c70-b9c8-902f3f7c52d9
-PlutoUI.TableOfContents(title="Indice", indent=true, depth=4, aside=true)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
+Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 Measures = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
-FFTW = "~1.5.0"
+DSP = "~0.7.8"
+FFTW = "~1.6.0"
+Images = "~0.25.2"
 LaTeXStrings = "~1.3.0"
-Measures = "~0.3.1"
-Plots = "~1.31.7"
-PlutoUI = "~0.7.39"
+Measures = "~0.3.2"
+Plots = "~1.38.10"
+PlutoUI = "~0.7.50"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -372,13 +455,13 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "c2564e881a971aa1d7cfd7cd39e9d24ef4c7e414"
+project_hash = "0e4adc8f4228f1b69d1e37875ff0f8b3592b3768"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
-git-tree-sha1 = "69f7020bd72f069c219b5e8c236c1fa90d2cb409"
+git-tree-sha1 = "16b6dbc4cf7caee4e1e75c49485ec67b667098a0"
 uuid = "621f4979-c628-5d54-868e-fcf4e3e8185c"
-version = "1.2.1"
+version = "1.3.1"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -387,20 +470,43 @@ uuid = "6e696c72-6542-2067-7265-42206c756150"
 version = "1.1.4"
 
 [[deps.Adapt]]
-deps = ["LinearAlgebra"]
-git-tree-sha1 = "195c5505521008abea5aee4f96930717958eac6f"
+deps = ["LinearAlgebra", "Requires"]
+git-tree-sha1 = "cc37d689f599e8df4f464b2fa3870ff7db7492ef"
 uuid = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
-version = "3.4.0"
+version = "3.6.1"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.1"
 
+[[deps.ArnoldiMethod]]
+deps = ["LinearAlgebra", "Random", "StaticArrays"]
+git-tree-sha1 = "62e51b39331de8911e4a7ff6f5aaf38a5f4cc0ae"
+uuid = "ec485272-7323-5ecc-a04f-4719b315124d"
+version = "0.2.0"
+
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 
+[[deps.AxisAlgorithms]]
+deps = ["LinearAlgebra", "Random", "SparseArrays", "WoodburyMatrices"]
+git-tree-sha1 = "66771c8d21c8ff5e3a93379480a2307ac36863f7"
+uuid = "13072b0f-2c55-5437-9ae7-d433b7a33950"
+version = "1.0.1"
+
+[[deps.AxisArrays]]
+deps = ["Dates", "IntervalSets", "IterTools", "RangeArrays"]
+git-tree-sha1 = "1dd4d9f5beebac0c03446918741b1a03dc5e5788"
+uuid = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
+version = "0.4.6"
+
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
+
+[[deps.BitFlags]]
+git-tree-sha1 = "43b1a4a8f797c1cddadf60499a8a077d4af2cd2d"
+uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
+version = "0.1.7"
 
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -408,35 +514,52 @@ git-tree-sha1 = "19a35467a82e236ff51bc17a3a44b69ef35185a2"
 uuid = "6e34b625-4abd-537c-b88f-471c36dfa7a0"
 version = "1.0.8+0"
 
+[[deps.CEnum]]
+git-tree-sha1 = "eb4cb44a499229b3b8426dcfb5dd85333951ff90"
+uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
+version = "0.4.2"
+
 [[deps.Cairo_jll]]
 deps = ["Artifacts", "Bzip2_jll", "CompilerSupportLibraries_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "JLLWrappers", "LZO_jll", "Libdl", "Pixman_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Zlib_jll", "libpng_jll"]
 git-tree-sha1 = "4b859a208b2397a7a623a03449e4636bdb17bcf2"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.16.1+1"
 
+[[deps.CatIndices]]
+deps = ["CustomUnitRanges", "OffsetArrays"]
+git-tree-sha1 = "a0f80a09780eed9b1d106a1bf62041c2efc995bc"
+uuid = "aafaddc9-749c-510e-ac4f-586e18779b91"
+version = "0.2.2"
+
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "80ca332f6dcb2508adba68f22f551adb2d00a624"
+git-tree-sha1 = "c6d890a52d2c4d55d326439580c3b8d0875a77d9"
 uuid = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-version = "1.15.3"
+version = "1.15.7"
 
 [[deps.ChangesOfVariables]]
 deps = ["ChainRulesCore", "LinearAlgebra", "Test"]
-git-tree-sha1 = "38f7a08f19d8810338d4f5085211c7dfa5d5bdd8"
+git-tree-sha1 = "485193efd2176b88e6622a39a246f8c5b600e74e"
 uuid = "9e997f8a-9a97-42d5-a9f1-ce6bfc15e2c0"
-version = "0.1.4"
+version = "0.1.6"
+
+[[deps.Clustering]]
+deps = ["Distances", "LinearAlgebra", "NearestNeighbors", "Printf", "Random", "SparseArrays", "Statistics", "StatsBase"]
+git-tree-sha1 = "7ebbd653f74504447f1c33b91cd706a69a1b189f"
+uuid = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
+version = "0.14.4"
 
 [[deps.CodecZlib]]
 deps = ["TranscodingStreams", "Zlib_jll"]
-git-tree-sha1 = "ded953804d019afa9a3f98981d99b33e3db7b6da"
+git-tree-sha1 = "9c209fb7536406834aa938fb149964b985de6c83"
 uuid = "944b1d66-785c-5afd-91f1-9de20f533193"
-version = "0.7.0"
+version = "0.7.1"
 
 [[deps.ColorSchemes]]
-deps = ["ColorTypes", "ColorVectorSpace", "Colors", "FixedPointNumbers", "Random"]
-git-tree-sha1 = "1fd869cc3875b57347f7027521f561cf46d1fcd8"
+deps = ["ColorTypes", "ColorVectorSpace", "Colors", "FixedPointNumbers", "Random", "SnoopPrecompile"]
+git-tree-sha1 = "aa3edc8f8dea6cbfa176ee12f7c2fc82f0608ed3"
 uuid = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
-version = "3.19.0"
+version = "3.20.0"
 
 [[deps.ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
@@ -446,47 +569,64 @@ version = "0.11.4"
 
 [[deps.ColorVectorSpace]]
 deps = ["ColorTypes", "FixedPointNumbers", "LinearAlgebra", "SpecialFunctions", "Statistics", "TensorCore"]
-git-tree-sha1 = "d08c20eef1f2cbc6e60fd3612ac4340b89fea322"
+git-tree-sha1 = "600cc5508d66b78aae350f7accdb58763ac18589"
 uuid = "c3611d14-8923-5661-9e6a-0046d554d3a4"
-version = "0.9.9"
+version = "0.9.10"
 
 [[deps.Colors]]
 deps = ["ColorTypes", "FixedPointNumbers", "Reexport"]
-git-tree-sha1 = "417b0ed7b8b838aa6ca0a87aadf1bb9eb111ce40"
+git-tree-sha1 = "fc08e5930ee9a4e03f84bfb5211cb54e7769758a"
 uuid = "5ae59095-9a9b-59fe-a467-6f913c188581"
-version = "0.12.8"
+version = "0.12.10"
 
 [[deps.Compat]]
 deps = ["Dates", "LinearAlgebra", "UUIDs"]
-git-tree-sha1 = "924cdca592bc16f14d2f7006754a621735280b74"
+git-tree-sha1 = "7a60c856b9fa189eb34f5f8a6f6b5529b7942957"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
-version = "4.1.0"
+version = "4.6.1"
 
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 version = "1.0.1+0"
 
+[[deps.ComputationalResources]]
+git-tree-sha1 = "52cb3ec90e8a8bea0e62e275ba577ad0f74821f7"
+uuid = "ed09eef8-17a6-5b46-8889-db040fac31e3"
+version = "0.3.2"
+
 [[deps.Contour]]
 git-tree-sha1 = "d05d9e7b7aedff4e5b51a029dced05cfb6125781"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.2"
 
+[[deps.CoordinateTransformations]]
+deps = ["LinearAlgebra", "StaticArrays"]
+git-tree-sha1 = "681ea870b918e7cff7111da58791d7f718067a19"
+uuid = "150eb455-5306-5404-9cee-2592286d6298"
+version = "0.6.2"
+
+[[deps.CustomUnitRanges]]
+git-tree-sha1 = "1a3f97f907e6dd8983b744d2642651bb162a3f7a"
+uuid = "dc8bdbbb-1ca9-579f-8c36-e416f6a65cce"
+version = "1.0.2"
+
+[[deps.DSP]]
+deps = ["Compat", "FFTW", "IterTools", "LinearAlgebra", "Polynomials", "Random", "Reexport", "SpecialFunctions", "Statistics"]
+git-tree-sha1 = "da8b06f89fce9996443010ef92572b193f8dca1f"
+uuid = "717857b8-e6f2-59f4-9121-6e50c889abd2"
+version = "0.7.8"
+
 [[deps.DataAPI]]
-git-tree-sha1 = "fb5f5316dd3fd4c5e7c30a24d50643b73e37cd40"
+git-tree-sha1 = "e8119c1a33d267e16108be441a287a6981ba1630"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
-version = "1.10.0"
+version = "1.14.0"
 
 [[deps.DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
 git-tree-sha1 = "d1fff3a548102f48987a52a2e0d114fa97d730f0"
 uuid = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 version = "0.18.13"
-
-[[deps.DataValueInterfaces]]
-git-tree-sha1 = "bfc1187b79289637fa0ef6d4436ebdfe6905cbd6"
-uuid = "e2d170a0-9d28-54be-80f0-106bbe20a464"
-version = "1.0.0"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -496,33 +636,32 @@ uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 deps = ["Mmap"]
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
+[[deps.Distances]]
+deps = ["LinearAlgebra", "SparseArrays", "Statistics", "StatsAPI"]
+git-tree-sha1 = "49eba9ad9f7ead780bfb7ee319f962c811c6d3b2"
+uuid = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
+version = "0.10.8"
+
+[[deps.Distributed]]
+deps = ["Random", "Serialization", "Sockets"]
+uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+
 [[deps.DocStringExtensions]]
 deps = ["LibGit2"]
-git-tree-sha1 = "5158c2b41018c5f7eb1470d558127ac274eca0c9"
+git-tree-sha1 = "2fb1e02f2b635d0845df5d7c167fec4dd739b00d"
 uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
-version = "0.9.1"
+version = "0.9.3"
 
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 version = "1.6.0"
 
-[[deps.EarCut_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "3f3a2501fa7236e9b911e0f7a588c657e822bb6d"
-uuid = "5ae413db-bbd1-5e63-b57d-d24a61df00f5"
-version = "2.2.3+0"
-
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "bad72f730e9e91c08d9427d5e8db95478a3c323d"
 uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
 version = "2.4.8+0"
-
-[[deps.Extents]]
-git-tree-sha1 = "5e1e4c53fa39afe63a7d356e30452249365fba99"
-uuid = "411431e0-e8b7-467b-b5e0-f676ba4f2910"
-version = "0.1.1"
 
 [[deps.FFMPEG]]
 deps = ["FFMPEG_jll"]
@@ -536,17 +675,29 @@ git-tree-sha1 = "74faea50c1d007c85837327f6775bea60b5492dd"
 uuid = "b22a6f82-2f65-5046-a5b2-351ab43fb4e5"
 version = "4.4.2+2"
 
+[[deps.FFTViews]]
+deps = ["CustomUnitRanges", "FFTW"]
+git-tree-sha1 = "cbdf14d1e8c7c8aacbe8b19862e0179fd08321c2"
+uuid = "4f61f5a4-77b1-5117-aa51-3ab5ef4ef0cd"
+version = "0.3.2"
+
 [[deps.FFTW]]
 deps = ["AbstractFFTs", "FFTW_jll", "LinearAlgebra", "MKL_jll", "Preferences", "Reexport"]
-git-tree-sha1 = "90630efff0894f8142308e334473eba54c433549"
+git-tree-sha1 = "f9818144ce7c8c41edf5c4c179c684d92aa4d9fe"
 uuid = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
-version = "1.5.0"
+version = "1.6.0"
 
 [[deps.FFTW_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "c6033cc3892d0ef5bb9cd29b7f2f0331ea5184ea"
 uuid = "f5851436-0d7a-5f13-b9de-f02708fd171a"
 version = "3.3.10+0"
+
+[[deps.FileIO]]
+deps = ["Pkg", "Requires", "UUIDs"]
+git-tree-sha1 = "7be5f99f7d15578798f338f5433b6c432ea8037b"
+uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
+version = "1.16.0"
 
 [[deps.FileWatching]]
 uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
@@ -588,28 +739,16 @@ uuid = "0656b61e-2033-5cc2-a64a-77c0f6c09b89"
 version = "3.3.8+0"
 
 [[deps.GR]]
-deps = ["Base64", "DelimitedFiles", "GR_jll", "HTTP", "JSON", "Libdl", "LinearAlgebra", "Pkg", "Printf", "Random", "RelocatableFolders", "Serialization", "Sockets", "Test", "UUIDs"]
-git-tree-sha1 = "037a1ca47e8a5989cc07d19729567bb71bfabd0c"
+deps = ["Artifacts", "Base64", "DelimitedFiles", "Downloads", "GR_jll", "HTTP", "JSON", "Libdl", "LinearAlgebra", "Pkg", "Preferences", "Printf", "Random", "Serialization", "Sockets", "TOML", "Tar", "Test", "UUIDs", "p7zip_jll"]
+git-tree-sha1 = "db730189e3d250d97515a91886de7e33aa8833e6"
 uuid = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
-version = "0.66.0"
+version = "0.72.2"
 
 [[deps.GR_jll]]
-deps = ["Artifacts", "Bzip2_jll", "Cairo_jll", "FFMPEG_jll", "Fontconfig_jll", "GLFW_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pixman_jll", "Pkg", "Qt5Base_jll", "Zlib_jll", "libpng_jll"]
-git-tree-sha1 = "c8ab731c9127cd931c93221f65d6a1008dad7256"
+deps = ["Artifacts", "Bzip2_jll", "Cairo_jll", "FFMPEG_jll", "Fontconfig_jll", "GLFW_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pixman_jll", "Qt5Base_jll", "Zlib_jll", "libpng_jll"]
+git-tree-sha1 = "47a2efe07729dd508a032e2f56c46c517481052a"
 uuid = "d2c73de3-f751-5644-a686-071e5b155ba9"
-version = "0.66.0+0"
-
-[[deps.GeoInterface]]
-deps = ["Extents"]
-git-tree-sha1 = "fb28b5dc239d0174d7297310ef7b84a11804dfab"
-uuid = "cf35fbd7-0cd7-5166-be24-54bfbe79505f"
-version = "1.0.1"
-
-[[deps.GeometryBasics]]
-deps = ["EarCut_jll", "GeoInterface", "IterTools", "LinearAlgebra", "StaticArrays", "StructArrays", "Tables"]
-git-tree-sha1 = "a7a97895780dab1085a97769316aa348830dc991"
-uuid = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
-version = "0.4.3"
+version = "0.72.2+0"
 
 [[deps.Gettext_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "XML2_jll"]
@@ -617,11 +756,23 @@ git-tree-sha1 = "9b02998aba7bf074d14de89f9d37ca24a1a0b046"
 uuid = "78b55507-aeef-58d4-861c-77aaff3498b1"
 version = "0.21.0+0"
 
+[[deps.Ghostscript_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "43ba3d3c82c18d88471cfd2924931658838c9d8f"
+uuid = "61579ee1-b43e-5ca0-a5da-69d92c66a64b"
+version = "9.55.0+4"
+
 [[deps.Glib_jll]]
-deps = ["Artifacts", "Gettext_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Libiconv_jll", "Libmount_jll", "PCRE_jll", "Pkg", "Zlib_jll"]
-git-tree-sha1 = "a32d672ac2c967f3deb8a81d828afc739c838a06"
+deps = ["Artifacts", "Gettext_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Libiconv_jll", "Libmount_jll", "PCRE2_jll", "Pkg", "Zlib_jll"]
+git-tree-sha1 = "d3b3624125c1474292d0d8ed0f65554ac37ddb23"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
-version = "2.68.3+2"
+version = "2.74.0+2"
+
+[[deps.Graphics]]
+deps = ["Colors", "LinearAlgebra", "NaNMath"]
+git-tree-sha1 = "d61890399bc535850c4bf08e4e0d3a7ad0f21cbd"
+uuid = "a2bd30eb-e257-5431-a919-1863eab51364"
+version = "1.1.2"
 
 [[deps.Graphite2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -629,16 +780,22 @@ git-tree-sha1 = "344bf40dcab1073aca04aa0df4fb092f920e4011"
 uuid = "3b182d85-2403-5c21-9c21-1e1f0cc25472"
 version = "1.3.14+0"
 
+[[deps.Graphs]]
+deps = ["ArnoldiMethod", "Compat", "DataStructures", "Distributed", "Inflate", "LinearAlgebra", "Random", "SharedArrays", "SimpleTraits", "SparseArrays", "Statistics"]
+git-tree-sha1 = "1cf1d7dcb4bc32d7b4a5add4232db3750c27ecb4"
+uuid = "86223c79-3864-5bf0-83f7-82e725a168b6"
+version = "1.8.0"
+
 [[deps.Grisu]]
 git-tree-sha1 = "53bb909d1151e57e2484c3d1b53e19552b887fb2"
 uuid = "42e2da0e-8278-4e71-bc24-59509adca0fe"
 version = "1.0.2"
 
 [[deps.HTTP]]
-deps = ["Base64", "CodecZlib", "Dates", "IniFile", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "f0956f8d42a92816d2bf062f8a6a6a0ad7f9b937"
+deps = ["Base64", "CodecZlib", "Dates", "IniFile", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
+git-tree-sha1 = "37e4657cd56b11abe3d10cd4a1ec5fbdb4180263"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.2.1"
+version = "1.7.4"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg"]
@@ -664,41 +821,178 @@ git-tree-sha1 = "f7be53659ab06ddc986428d3a9dcc95f6fa6705a"
 uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
 version = "0.2.2"
 
+[[deps.ImageAxes]]
+deps = ["AxisArrays", "ImageBase", "ImageCore", "Reexport", "SimpleTraits"]
+git-tree-sha1 = "c54b581a83008dc7f292e205f4c409ab5caa0f04"
+uuid = "2803e5a7-5153-5ecf-9a86-9b4c37f5f5ac"
+version = "0.6.10"
+
+[[deps.ImageBase]]
+deps = ["ImageCore", "Reexport"]
+git-tree-sha1 = "b51bb8cae22c66d0f6357e3bcb6363145ef20835"
+uuid = "c817782e-172a-44cc-b673-b171935fbb9e"
+version = "0.1.5"
+
+[[deps.ImageContrastAdjustment]]
+deps = ["ImageCore", "ImageTransformations", "Parameters"]
+git-tree-sha1 = "0d75cafa80cf22026cea21a8e6cf965295003edc"
+uuid = "f332f351-ec65-5f6a-b3d1-319c6670881a"
+version = "0.3.10"
+
+[[deps.ImageCore]]
+deps = ["AbstractFFTs", "ColorVectorSpace", "Colors", "FixedPointNumbers", "Graphics", "MappedArrays", "MosaicViews", "OffsetArrays", "PaddedViews", "Reexport"]
+git-tree-sha1 = "acf614720ef026d38400b3817614c45882d75500"
+uuid = "a09fc81d-aa75-5fe9-8630-4744c3626534"
+version = "0.9.4"
+
+[[deps.ImageDistances]]
+deps = ["Distances", "ImageCore", "ImageMorphology", "LinearAlgebra", "Statistics"]
+git-tree-sha1 = "b1798a4a6b9aafb530f8f0c4a7b2eb5501e2f2a3"
+uuid = "51556ac3-7006-55f5-8cb3-34580c88182d"
+version = "0.2.16"
+
+[[deps.ImageFiltering]]
+deps = ["CatIndices", "ComputationalResources", "DataStructures", "FFTViews", "FFTW", "ImageBase", "ImageCore", "LinearAlgebra", "OffsetArrays", "Reexport", "SnoopPrecompile", "SparseArrays", "StaticArrays", "Statistics", "TiledIteration"]
+git-tree-sha1 = "f265e53558fbbf23e0d54e4fab7106c0f2a9e576"
+uuid = "6a3955dd-da59-5b1f-98d4-e7296123deb5"
+version = "0.7.3"
+
+[[deps.ImageIO]]
+deps = ["FileIO", "IndirectArrays", "JpegTurbo", "LazyModules", "Netpbm", "OpenEXR", "PNGFiles", "QOI", "Sixel", "TiffImages", "UUIDs"]
+git-tree-sha1 = "342f789fd041a55166764c351da1710db97ce0e0"
+uuid = "82e4d734-157c-48bb-816b-45c225c6df19"
+version = "0.6.6"
+
+[[deps.ImageMagick]]
+deps = ["FileIO", "ImageCore", "ImageMagick_jll", "InteractiveUtils", "Libdl", "Pkg", "Random"]
+git-tree-sha1 = "5bc1cb62e0c5f1005868358db0692c994c3a13c6"
+uuid = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
+version = "1.2.1"
+
+[[deps.ImageMagick_jll]]
+deps = ["Artifacts", "Ghostscript_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pkg", "Zlib_jll", "libpng_jll"]
+git-tree-sha1 = "124626988534986113cfd876e3093e4a03890f58"
+uuid = "c73af94c-d91f-53ed-93a7-00f77d67a9d7"
+version = "6.9.12+3"
+
+[[deps.ImageMetadata]]
+deps = ["AxisArrays", "ImageAxes", "ImageBase", "ImageCore"]
+git-tree-sha1 = "36cbaebed194b292590cba2593da27b34763804a"
+uuid = "bc367c6b-8a6b-528e-b4bd-a4b897500b49"
+version = "0.9.8"
+
+[[deps.ImageMorphology]]
+deps = ["ImageCore", "LinearAlgebra", "Requires", "TiledIteration"]
+git-tree-sha1 = "e7c68ab3df4a75511ba33fc5d8d9098007b579a8"
+uuid = "787d08f9-d448-5407-9aad-5290dd7ab264"
+version = "0.3.2"
+
+[[deps.ImageQualityIndexes]]
+deps = ["ImageContrastAdjustment", "ImageCore", "ImageDistances", "ImageFiltering", "LazyModules", "OffsetArrays", "SnoopPrecompile", "Statistics"]
+git-tree-sha1 = "5985d467623f106523ed8351f255642b5141e7be"
+uuid = "2996bd0c-7a13-11e9-2da2-2f5ce47296a9"
+version = "0.3.4"
+
+[[deps.ImageSegmentation]]
+deps = ["Clustering", "DataStructures", "Distances", "Graphs", "ImageCore", "ImageFiltering", "ImageMorphology", "LinearAlgebra", "MetaGraphs", "RegionTrees", "SimpleWeightedGraphs", "StaticArrays", "Statistics"]
+git-tree-sha1 = "fb0b597b4928e29fed0597724cfbb5940974f8ca"
+uuid = "80713f31-8817-5129-9cf8-209ff8fb23e1"
+version = "1.8.0"
+
+[[deps.ImageShow]]
+deps = ["Base64", "ColorSchemes", "FileIO", "ImageBase", "ImageCore", "OffsetArrays", "StackViews"]
+git-tree-sha1 = "ce28c68c900eed3cdbfa418be66ed053e54d4f56"
+uuid = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
+version = "0.3.7"
+
+[[deps.ImageTransformations]]
+deps = ["AxisAlgorithms", "ColorVectorSpace", "CoordinateTransformations", "ImageBase", "ImageCore", "Interpolations", "OffsetArrays", "Rotations", "StaticArrays"]
+git-tree-sha1 = "8717482f4a2108c9358e5c3ca903d3a6113badc9"
+uuid = "02fcd773-0e25-5acc-982a-7f6622650795"
+version = "0.9.5"
+
+[[deps.Images]]
+deps = ["Base64", "FileIO", "Graphics", "ImageAxes", "ImageBase", "ImageContrastAdjustment", "ImageCore", "ImageDistances", "ImageFiltering", "ImageIO", "ImageMagick", "ImageMetadata", "ImageMorphology", "ImageQualityIndexes", "ImageSegmentation", "ImageShow", "ImageTransformations", "IndirectArrays", "IntegralArrays", "Random", "Reexport", "SparseArrays", "StaticArrays", "Statistics", "StatsBase", "TiledIteration"]
+git-tree-sha1 = "03d1301b7ec885b266c0f816f338368c6c0b81bd"
+uuid = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
+version = "0.25.2"
+
+[[deps.Imath_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "3d09a9f60edf77f8a4d99f9e015e8fbf9989605d"
+uuid = "905a6f67-0a94-5f89-b386-d35d92009cd1"
+version = "3.1.7+0"
+
+[[deps.IndirectArrays]]
+git-tree-sha1 = "012e604e1c7458645cb8b436f8fba789a51b257f"
+uuid = "9b13fd28-a010-5f03-acff-a1bbcff69959"
+version = "1.0.0"
+
+[[deps.Inflate]]
+git-tree-sha1 = "5cd07aab533df5170988219191dfad0519391428"
+uuid = "d25df0c9-e2be-5dd7-82c8-3ad0b3e990b9"
+version = "0.1.3"
+
 [[deps.IniFile]]
 git-tree-sha1 = "f550e6e32074c939295eb5ea6de31849ac2c9625"
 uuid = "83e8ac13-25f8-5344-8a64-a9f2b223428f"
 version = "0.5.1"
 
+[[deps.IntegralArrays]]
+deps = ["ColorTypes", "FixedPointNumbers", "IntervalSets"]
+git-tree-sha1 = "be8e690c3973443bec584db3346ddc904d4884eb"
+uuid = "1d092043-8f09-5a30-832f-7509e371ab51"
+version = "0.1.5"
+
 [[deps.IntelOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "d979e54b71da82f3a65b62553da4fc3d18c9004c"
+git-tree-sha1 = "0cb9352ef2e01574eeebdb102948a58740dcaf83"
 uuid = "1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"
-version = "2018.0.3+2"
+version = "2023.1.0+0"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
+[[deps.Interpolations]]
+deps = ["Adapt", "AxisAlgorithms", "ChainRulesCore", "LinearAlgebra", "OffsetArrays", "Random", "Ratios", "Requires", "SharedArrays", "SparseArrays", "StaticArrays", "WoodburyMatrices"]
+git-tree-sha1 = "721ec2cf720536ad005cb38f50dbba7b02419a15"
+uuid = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
+version = "0.14.7"
+
+[[deps.IntervalSets]]
+deps = ["Dates", "Random", "Statistics"]
+git-tree-sha1 = "16c0cc91853084cb5f58a78bd209513900206ce6"
+uuid = "8197267c-284f-5f27-9208-e0e47529a953"
+version = "0.7.4"
+
 [[deps.InverseFunctions]]
 deps = ["Test"]
-git-tree-sha1 = "b3364212fb5d870f724876ffcd34dd8ec6d98918"
+git-tree-sha1 = "49510dfcb407e572524ba94aeae2fced1f3feb0f"
 uuid = "3587e190-3f89-42d0-90ee-14403ec27112"
-version = "0.1.7"
+version = "0.1.8"
 
 [[deps.IrrationalConstants]]
-git-tree-sha1 = "7fd44fd4ff43fc60815f8e764c0f352b83c49151"
+git-tree-sha1 = "630b497eafcc20001bba38a4651b327dcfc491d2"
 uuid = "92d709cd-6900-40b7-9082-c6be49f344b6"
-version = "0.1.1"
+version = "0.2.2"
 
 [[deps.IterTools]]
 git-tree-sha1 = "fa6287a4469f5e048d763df38279ee729fbd44e5"
 uuid = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
 version = "1.4.0"
 
-[[deps.IteratorInterfaceExtensions]]
-git-tree-sha1 = "a3f24677c21f5bbe9d2a714f95dcd58337fb2856"
-uuid = "82899510-4779-5014-852e-03e436cf321d"
-version = "1.0.0"
+[[deps.JLD2]]
+deps = ["FileIO", "MacroTools", "Mmap", "OrderedCollections", "Pkg", "Printf", "Reexport", "Requires", "TranscodingStreams", "UUIDs"]
+git-tree-sha1 = "42c17b18ced77ff0be65957a591d34f4ed57c631"
+uuid = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+version = "0.4.31"
+
+[[deps.JLFzf]]
+deps = ["Pipe", "REPL", "Random", "fzf_jll"]
+git-tree-sha1 = "f377670cda23b6b7c1c0b3893e37451c5c1a2185"
+uuid = "1019f520-868f-41f5-a6de-eb00f4b6a39c"
+version = "0.1.5"
 
 [[deps.JLLWrappers]]
 deps = ["Preferences"]
@@ -708,15 +1002,21 @@ version = "1.4.1"
 
 [[deps.JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
-git-tree-sha1 = "3c837543ddb02250ef42f4738347454f95079d4e"
+git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
 uuid = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-version = "0.21.3"
+version = "0.21.4"
+
+[[deps.JpegTurbo]]
+deps = ["CEnum", "FileIO", "ImageCore", "JpegTurbo_jll", "TOML"]
+git-tree-sha1 = "106b6aa272f294ba47e96bd3acbabdc0407b5c60"
+uuid = "b835a17e-a41a-41e7-81f0-2f016b05efe0"
+version = "0.1.2"
 
 [[deps.JpegTurbo_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "b53380851c6e6664204efb2e62cd24fa5c47e4ba"
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "6f2675ef130a300a112286de91973805fcc5ffbc"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
-version = "2.1.2+0"
+version = "2.1.91+0"
 
 [[deps.LAME_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -742,14 +1042,19 @@ uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.3.0"
 
 [[deps.Latexify]]
-deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "Printf", "Requires"]
-git-tree-sha1 = "1a43be956d433b5d0321197150c2f94e16c0aaa0"
+deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Printf", "Requires"]
+git-tree-sha1 = "ee342fcc2b8762c43a60dfbbf73bc2258703af19"
 uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
-version = "0.15.16"
+version = "0.15.19"
 
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
 uuid = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
+
+[[deps.LazyModules]]
+git-tree-sha1 = "a560dd966b386ac9ae60bdd3a3d3a326062d3c3e"
+uuid = "8cdb02fc-e678-4876-92c5-9defec4f444e"
+version = "0.3.1"
 
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -787,9 +1092,9 @@ version = "1.8.7+0"
 
 [[deps.Libglvnd_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "Xorg_libX11_jll", "Xorg_libXext_jll"]
-git-tree-sha1 = "7739f837d6447403596a75d19ed01fd08d6f56bf"
+git-tree-sha1 = "6f73d1dd803986947b2c750138528a999a6c7733"
 uuid = "7e76a0d4-f3c7-5321-8279-8d96eeed0f29"
-version = "1.3.0+3"
+version = "1.6.0+0"
 
 [[deps.Libgpg_error_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -827,30 +1132,46 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [[deps.LogExpFunctions]]
 deps = ["ChainRulesCore", "ChangesOfVariables", "DocStringExtensions", "InverseFunctions", "IrrationalConstants", "LinearAlgebra"]
-git-tree-sha1 = "361c2b088575b07946508f135ac556751240091c"
+git-tree-sha1 = "0a1b7c2863e44523180fdb3146534e265a91870b"
 uuid = "2ab3a3ac-af41-5b50-aa03-7779005ae688"
-version = "0.3.17"
+version = "0.3.23"
 
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
 [[deps.LoggingExtras]]
 deps = ["Dates", "Logging"]
-git-tree-sha1 = "5d4d2d9904227b8bd66386c1138cf4d5ffa826bf"
+git-tree-sha1 = "cedb76b37bc5a6c702ade66be44f831fa23c681e"
 uuid = "e6f89c97-d47a-5376-807f-9c37f3926c36"
-version = "0.4.9"
+version = "1.0.0"
+
+[[deps.MIMEs]]
+git-tree-sha1 = "65f28ad4b594aebe22157d6fac869786a255b7eb"
+uuid = "6c6e2e6c-3030-632d-7369-2d6c69616d65"
+version = "0.1.4"
 
 [[deps.MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "Pkg"]
-git-tree-sha1 = "e595b205efd49508358f7dc670a940c790204629"
+git-tree-sha1 = "2ce8695e1e699b68702c03402672a69f54b8aca9"
 uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
-version = "2022.0.0+0"
+version = "2022.2.0+0"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
-git-tree-sha1 = "3d3e902b31198a27340d0bf00d6ac452866021cf"
+git-tree-sha1 = "42324d08725e200c23d4dfb549e0d5d89dede2d2"
 uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
-version = "0.5.9"
+version = "0.5.10"
+
+[[deps.MakieCore]]
+deps = ["Observables"]
+git-tree-sha1 = "9926529455a331ed73c19ff06d16906737a876ed"
+uuid = "20f20a25-4f0e-4fdf-b5d1-57303727442b"
+version = "0.6.3"
+
+[[deps.MappedArrays]]
+git-tree-sha1 = "e8b359ef06ec72e8c030463fe02efe5527ee5142"
+uuid = "dbb5928d-eab1-5f90-85c2-b9b0edb7c900"
+version = "0.4.1"
 
 [[deps.Markdown]]
 deps = ["Base64"]
@@ -858,9 +1179,9 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
 [[deps.MbedTLS]]
 deps = ["Dates", "MbedTLS_jll", "MozillaCACerts_jll", "Random", "Sockets"]
-git-tree-sha1 = "d9ab10da9de748859a7780338e1d6566993d1f25"
+git-tree-sha1 = "03a9b9718f5682ecb107ac9f7308991db4ce395b"
 uuid = "739be429-bea8-5141-9913-cc70e7f3736d"
-version = "1.1.3"
+version = "1.1.7"
 
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -868,32 +1189,73 @@ uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
 version = "2.28.0+0"
 
 [[deps.Measures]]
-git-tree-sha1 = "e498ddeee6f9fdb4551ce855a46f54dbd900245f"
+git-tree-sha1 = "c13304c81eec1ed3af7fc20e75fb6b26092a1102"
 uuid = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
-version = "0.3.1"
+version = "0.3.2"
+
+[[deps.MetaGraphs]]
+deps = ["Graphs", "JLD2", "Random"]
+git-tree-sha1 = "1130dbe1d5276cb656f6e1094ce97466ed700e5a"
+uuid = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
+version = "0.7.2"
 
 [[deps.Missings]]
 deps = ["DataAPI"]
-git-tree-sha1 = "bf210ce90b6c9eed32d25dbcae1ebc565df2687f"
+git-tree-sha1 = "f66bdc5de519e8f8ae43bdc598782d35a25b1272"
 uuid = "e1d29d7a-bbdc-5cf2-9ac0-f12de2c33e28"
-version = "1.0.2"
+version = "1.1.0"
 
 [[deps.Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
+
+[[deps.MosaicViews]]
+deps = ["MappedArrays", "OffsetArrays", "PaddedViews", "StackViews"]
+git-tree-sha1 = "7b86a5d4d70a9f5cdf2dacb3cbe6d251d1a61dbe"
+uuid = "e94cdb99-869f-56ef-bcf0-1ae2bcbe0389"
+version = "0.3.4"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 version = "2022.2.1"
 
+[[deps.MutableArithmetics]]
+deps = ["LinearAlgebra", "SparseArrays", "Test"]
+git-tree-sha1 = "3295d296288ab1a0a2528feb424b854418acff57"
+uuid = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
+version = "1.2.3"
+
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
-git-tree-sha1 = "a7c3d1da1189a1c2fe843a3bfa04d18d20eb3211"
+git-tree-sha1 = "0877504529a3e5c3343c6f8b4c0381e57e4387e4"
 uuid = "77ba4419-2d1f-58cd-9bb1-8ffee604a2e3"
-version = "1.0.1"
+version = "1.0.2"
+
+[[deps.NearestNeighbors]]
+deps = ["Distances", "StaticArrays"]
+git-tree-sha1 = "2c3726ceb3388917602169bed973dbc97f1b51a8"
+uuid = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
+version = "0.4.13"
+
+[[deps.Netpbm]]
+deps = ["FileIO", "ImageCore", "ImageMetadata"]
+git-tree-sha1 = "5ae7ca23e13855b3aba94550f26146c01d259267"
+uuid = "f09324ee-3d7c-5217-9330-fc30815ba969"
+version = "1.1.0"
 
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 version = "1.2.0"
+
+[[deps.Observables]]
+git-tree-sha1 = "6862738f9796b3edc1c09d0890afce4eca9e7e93"
+uuid = "510215fc-4207-5dde-b226-833fc4488ee2"
+version = "0.5.4"
+
+[[deps.OffsetArrays]]
+deps = ["Adapt"]
+git-tree-sha1 = "82d7c9e310fe55aa54996e6f7f94674e2a38fcb4"
+uuid = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
+version = "1.12.9"
 
 [[deps.Ogg_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -906,16 +1268,34 @@ deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
 version = "0.3.20+0"
 
+[[deps.OpenEXR]]
+deps = ["Colors", "FileIO", "OpenEXR_jll"]
+git-tree-sha1 = "327f53360fdb54df7ecd01e96ef1983536d1e633"
+uuid = "52e1d378-f018-4a11-a4be-720524705ac7"
+version = "0.3.2"
+
+[[deps.OpenEXR_jll]]
+deps = ["Artifacts", "Imath_jll", "JLLWrappers", "Libdl", "Zlib_jll"]
+git-tree-sha1 = "a4ca623df1ae99d09bc9868b008262d0c0ac1e4f"
+uuid = "18a262bb-aa17-5467-a713-aee519bc75cb"
+version = "3.1.4+0"
+
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.1+0"
 
+[[deps.OpenSSL]]
+deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
+git-tree-sha1 = "5b3e170ea0724f1e3ed6018c5b006c190f80e87d"
+uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
+version = "1.3.5"
+
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "e60321e3f2616584ff98f0a4f18d98ae6f89bbb3"
+git-tree-sha1 = "9ff31d101d987eb9d66bd8b176ac7c277beccd09"
 uuid = "458c3c95-2e84-50aa-8efc-19380b2a3a95"
-version = "1.1.17+0"
+version = "1.1.20+0"
 
 [[deps.OpenSpecFun_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Pkg"]
@@ -930,26 +1310,43 @@ uuid = "91d4177d-7536-5919-b921-800302f37372"
 version = "1.3.2+0"
 
 [[deps.OrderedCollections]]
-git-tree-sha1 = "85f8e6578bf1f9ee0d11e7bb1b1456435479d47c"
+git-tree-sha1 = "d321bf2de576bf25ec4d3e4360faca399afca282"
 uuid = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
-version = "1.4.1"
+version = "1.6.0"
 
 [[deps.PCRE2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "efcefdf7-47ab-520b-bdef-62a2eaa19f15"
 version = "10.40.0+0"
 
-[[deps.PCRE_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "b2a7af664e098055a7529ad1a900ded962bca488"
-uuid = "2f80f16e-611a-54ab-bc61-aa92de5b98fc"
-version = "8.44.0+0"
+[[deps.PNGFiles]]
+deps = ["Base64", "CEnum", "ImageCore", "IndirectArrays", "OffsetArrays", "libpng_jll"]
+git-tree-sha1 = "f809158b27eba0c18c269cf2a2be6ed751d3e81d"
+uuid = "f57f5aa1-a3ce-4bc8-8ab9-96f992907883"
+version = "0.3.17"
+
+[[deps.PaddedViews]]
+deps = ["OffsetArrays"]
+git-tree-sha1 = "0fac6313486baae819364c52b4f483450a9d793f"
+uuid = "5432bcbf-9aad-5242-b902-cca2824c8663"
+version = "0.5.12"
+
+[[deps.Parameters]]
+deps = ["OrderedCollections", "UnPack"]
+git-tree-sha1 = "34c0e9ad262e5f7fc75b10a9952ca7692cfc5fbe"
+uuid = "d96e819e-fc66-5662-9728-84c9c7592b0a"
+version = "0.12.3"
 
 [[deps.Parsers]]
-deps = ["Dates"]
-git-tree-sha1 = "0044b23da09b5608b4ecacb4e5e6c6332f833a7e"
+deps = ["Dates", "SnoopPrecompile"]
+git-tree-sha1 = "478ac6c952fddd4399e71d4779797c538d0ff2bf"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "2.3.2"
+version = "2.5.8"
+
+[[deps.Pipe]]
+git-tree-sha1 = "6842804e7867b115ca9de748a0cf6b364523c16d"
+uuid = "b98c9c47-44ae-5843-9183-064241ee97a0"
+version = "1.3.0"
 
 [[deps.Pixman_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -962,29 +1359,41 @@ deps = ["Artifacts", "Dates", "Downloads", "LibGit2", "Libdl", "Logging", "Markd
 uuid = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 version = "1.8.0"
 
+[[deps.PkgVersion]]
+deps = ["Pkg"]
+git-tree-sha1 = "f6cf8e7944e50901594838951729a1861e668cb8"
+uuid = "eebad327-c553-4316-9ea0-9fa01ccd7688"
+version = "0.3.2"
+
 [[deps.PlotThemes]]
 deps = ["PlotUtils", "Statistics"]
-git-tree-sha1 = "8162b2f8547bc23876edd0c5181b27702ae58dce"
+git-tree-sha1 = "1f03a2d339f42dca4a4da149c7e15e9b896ad899"
 uuid = "ccf2f8ad-2431-5c83-bf29-c5338b663b6a"
-version = "3.0.0"
+version = "3.1.0"
 
 [[deps.PlotUtils]]
-deps = ["ColorSchemes", "Colors", "Dates", "Printf", "Random", "Reexport", "Statistics"]
-git-tree-sha1 = "9888e59493658e476d3073f1ce24348bdc086660"
+deps = ["ColorSchemes", "Colors", "Dates", "Printf", "Random", "Reexport", "SnoopPrecompile", "Statistics"]
+git-tree-sha1 = "c95373e73290cf50a8a22c3375e4625ded5c5280"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
-version = "1.3.0"
+version = "1.3.4"
 
 [[deps.Plots]]
-deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "GeometryBasics", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "UUIDs", "UnicodeFun", "Unzip"]
-git-tree-sha1 = "a19652399f43938413340b2068e11e55caa46b65"
+deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JLFzf", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "Preferences", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SnoopPrecompile", "SparseArrays", "Statistics", "StatsBase", "UUIDs", "UnicodeFun", "Unzip"]
+git-tree-sha1 = "5434b0ee344eaf2854de251f326df8720f6a7b55"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.31.7"
+version = "1.38.10"
 
 [[deps.PlutoUI]]
-deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "Markdown", "Random", "Reexport", "UUIDs"]
-git-tree-sha1 = "8d1f54886b9037091edf146b517989fc4a09efec"
+deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
+git-tree-sha1 = "5bb5129fdd62a2bbbe17c2756932259acf467386"
 uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
-version = "0.7.39"
+version = "0.7.50"
+
+[[deps.Polynomials]]
+deps = ["ChainRulesCore", "LinearAlgebra", "MakieCore", "MutableArithmetics", "RecipesBase"]
+git-tree-sha1 = "66443538efd80fac4962b74523ec0b35c9464a21"
+uuid = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
+version = "3.2.9"
 
 [[deps.Preferences]]
 deps = ["TOML"]
@@ -996,11 +1405,29 @@ version = "1.3.0"
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
+[[deps.ProgressMeter]]
+deps = ["Distributed", "Printf"]
+git-tree-sha1 = "d7a7aef8f8f2d537104f170139553b14dfe39fe9"
+uuid = "92933f4c-e287-5a05-a399-4b506db050ca"
+version = "1.7.2"
+
+[[deps.QOI]]
+deps = ["ColorTypes", "FileIO", "FixedPointNumbers"]
+git-tree-sha1 = "18e8f4d1426e965c7b532ddd260599e1510d26ce"
+uuid = "4b34888f-f399-49d4-9bb3-47ed5cae4e65"
+version = "1.0.0"
+
 [[deps.Qt5Base_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Fontconfig_jll", "Glib_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "OpenSSL_jll", "Pkg", "Xorg_libXext_jll", "Xorg_libxcb_jll", "Xorg_xcb_util_image_jll", "Xorg_xcb_util_keysyms_jll", "Xorg_xcb_util_renderutil_jll", "Xorg_xcb_util_wm_jll", "Zlib_jll", "xkbcommon_jll"]
 git-tree-sha1 = "0c03844e2231e12fda4d0086fd7cbe4098ee8dc5"
 uuid = "ea2cea3b-5b76-57ae-a6ef-0a8af62496e1"
 version = "5.15.3+2"
+
+[[deps.Quaternions]]
+deps = ["LinearAlgebra", "Random", "RealDot"]
+git-tree-sha1 = "da095158bdc8eaccb7890f9884048555ab771019"
+uuid = "94ee1d12-ae83-5a48-8b1c-48b8ff168ae0"
+version = "0.7.4"
 
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
@@ -1010,27 +1437,51 @@ uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 deps = ["SHA", "Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
+[[deps.RangeArrays]]
+git-tree-sha1 = "b9039e93773ddcfc828f12aadf7115b4b4d225f5"
+uuid = "b3c3ace0-ae52-54e7-9d0b-2c1406fd6b9d"
+version = "0.3.2"
+
+[[deps.Ratios]]
+deps = ["Requires"]
+git-tree-sha1 = "dc84268fe0e3335a62e315a3a7cf2afa7178a734"
+uuid = "c84ed2f1-dad5-54f0-aa8e-dbefe2724439"
+version = "0.4.3"
+
+[[deps.RealDot]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "9f0a1b71baaf7650f4fa8a1d168c7fb6ee41f0c9"
+uuid = "c1ae055f-0cd5-4b69-90a6-9a35b1a98df9"
+version = "0.1.0"
+
 [[deps.RecipesBase]]
-git-tree-sha1 = "6bf3f380ff52ce0832ddd3a2a7b9538ed1bcca7d"
+deps = ["SnoopPrecompile"]
+git-tree-sha1 = "261dddd3b862bd2c940cf6ca4d1c8fe593e457c8"
 uuid = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-version = "1.2.1"
+version = "1.3.3"
 
 [[deps.RecipesPipeline]]
-deps = ["Dates", "NaNMath", "PlotUtils", "RecipesBase"]
-git-tree-sha1 = "e7eac76a958f8664f2718508435d058168c7953d"
+deps = ["Dates", "NaNMath", "PlotUtils", "RecipesBase", "SnoopPrecompile"]
+git-tree-sha1 = "e974477be88cb5e3040009f3767611bc6357846f"
 uuid = "01d81517-befc-4cb6-b9ec-a95719d0359c"
-version = "0.6.3"
+version = "0.6.11"
 
 [[deps.Reexport]]
 git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
 version = "1.2.2"
 
+[[deps.RegionTrees]]
+deps = ["IterTools", "LinearAlgebra", "StaticArrays"]
+git-tree-sha1 = "4618ed0da7a251c7f92e869ae1a19c74a7d2a7f9"
+uuid = "dee08c22-ab7f-5625-9660-a9af2021b33f"
+version = "0.3.2"
+
 [[deps.RelocatableFolders]]
 deps = ["SHA", "Scratch"]
-git-tree-sha1 = "22c5201127d7b243b9ee1de3b43c408879dff60f"
+git-tree-sha1 = "90bc7a7c96410424509e4263e277e43250c05691"
 uuid = "05181044-ff0b-4ac5-8273-598c1e38db00"
-version = "0.3.0"
+version = "1.0.0"
 
 [[deps.Requires]]
 deps = ["UUIDs"]
@@ -1038,18 +1489,28 @@ git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
 uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.3.0"
 
+[[deps.Rotations]]
+deps = ["LinearAlgebra", "Quaternions", "Random", "StaticArrays", "Statistics"]
+git-tree-sha1 = "72a6abdcd088764878b473102df7c09bbc0548de"
+uuid = "6038ab10-8711-5258-84ad-4b1120ba62dc"
+version = "1.4.0"
+
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 version = "0.7.0"
 
 [[deps.Scratch]]
 deps = ["Dates"]
-git-tree-sha1 = "f94f779c94e58bf9ea243e77a37e16d9de9126bd"
+git-tree-sha1 = "30449ee12237627992a99d5e30ae63e4d78cd24a"
 uuid = "6c6a2e73-6563-6170-7368-637461726353"
-version = "1.1.1"
+version = "1.2.0"
 
 [[deps.Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
+
+[[deps.SharedArrays]]
+deps = ["Distributed", "Mmap", "Random", "Serialization"]
+uuid = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
 
 [[deps.Showoff]]
 deps = ["Dates", "Grisu"]
@@ -1062,14 +1523,38 @@ git-tree-sha1 = "874e8867b33a00e784c8a7e4b60afe9e037b74e1"
 uuid = "777ac1f9-54b0-4bf8-805c-2214025038e7"
 version = "1.1.0"
 
+[[deps.SimpleTraits]]
+deps = ["InteractiveUtils", "MacroTools"]
+git-tree-sha1 = "5d7e3f4e11935503d3ecaf7186eac40602e7d231"
+uuid = "699a6c99-e7fa-54fc-8d76-47d257e15c1d"
+version = "0.9.4"
+
+[[deps.SimpleWeightedGraphs]]
+deps = ["Graphs", "LinearAlgebra", "Markdown", "SparseArrays", "Test"]
+git-tree-sha1 = "7d0b07df35fccf9b866a94bcab98822a87a3cb6f"
+uuid = "47aef6b3-ad0c-573a-a1e2-d07658019622"
+version = "1.3.0"
+
+[[deps.Sixel]]
+deps = ["Dates", "FileIO", "ImageCore", "IndirectArrays", "OffsetArrays", "REPL", "libsixel_jll"]
+git-tree-sha1 = "8fb59825be681d451c246a795117f317ecbcaa28"
+uuid = "45858cf5-a6b0-47a3-bbea-62219f50df47"
+version = "0.1.2"
+
+[[deps.SnoopPrecompile]]
+deps = ["Preferences"]
+git-tree-sha1 = "e760a70afdcd461cf01a575947738d359234665c"
+uuid = "66db9d55-30c0-4569-8b51-7e840670fc0c"
+version = "1.0.3"
+
 [[deps.Sockets]]
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 
 [[deps.SortingAlgorithms]]
 deps = ["DataStructures"]
-git-tree-sha1 = "b3363d7460f7d098ca0912c69b082f75625d7508"
+git-tree-sha1 = "a4ada03f999bd01b3a25dcaa30b2d929fe537e00"
 uuid = "a2af1166-a08f-5f64-846c-94a0d3cef48c"
-version = "1.0.1"
+version = "1.1.0"
 
 [[deps.SparseArrays]]
 deps = ["LinearAlgebra", "Random"]
@@ -1077,20 +1562,26 @@ uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [[deps.SpecialFunctions]]
 deps = ["ChainRulesCore", "IrrationalConstants", "LogExpFunctions", "OpenLibm_jll", "OpenSpecFun_jll"]
-git-tree-sha1 = "d75bda01f8c31ebb72df80a46c88b25d1c79c56d"
+git-tree-sha1 = "ef28127915f4229c971eb43f3fc075dd3fe91880"
 uuid = "276daf66-3868-5448-9aa4-cd146d93841b"
-version = "2.1.7"
+version = "2.2.0"
+
+[[deps.StackViews]]
+deps = ["OffsetArrays"]
+git-tree-sha1 = "46e589465204cd0c08b4bd97385e4fa79a0c770c"
+uuid = "cae243ae-269e-4f55-b966-ac2d0dc13c15"
+version = "0.1.1"
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "Random", "StaticArraysCore", "Statistics"]
-git-tree-sha1 = "8803c6dea034ab8cd988abe4a91e5589d61c7416"
+git-tree-sha1 = "63e84b7fdf5021026d0f17f76af7c57772313d99"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.5.4"
+version = "1.5.21"
 
 [[deps.StaticArraysCore]]
-git-tree-sha1 = "5b413a57dd3cea38497d745ce088ac8592fbb5be"
+git-tree-sha1 = "6b7ba252635a5eff6a0b0664a41ee140a1c9e72a"
 uuid = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
-version = "1.1.0"
+version = "1.4.0"
 
 [[deps.Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
@@ -1098,9 +1589,9 @@ uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [[deps.StatsAPI]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "f9af7f195fb13589dd2e2d57fdb401717d2eb1f6"
+git-tree-sha1 = "45a7769a04a3cf80da1c1c7c60caf932e6f4c9f7"
 uuid = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
-version = "1.5.0"
+version = "1.6.0"
 
 [[deps.StatsBase]]
 deps = ["DataAPI", "DataStructures", "LinearAlgebra", "LogExpFunctions", "Missings", "Printf", "Random", "SortingAlgorithms", "SparseArrays", "Statistics", "StatsAPI"]
@@ -1108,28 +1599,10 @@ git-tree-sha1 = "d1bf48bfcc554a3761a133fe3a9bb01488e06916"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 version = "0.33.21"
 
-[[deps.StructArrays]]
-deps = ["Adapt", "DataAPI", "StaticArrays", "Tables"]
-git-tree-sha1 = "ec47fb6069c57f1cee2f67541bf8f23415146de7"
-uuid = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
-version = "0.6.11"
-
 [[deps.TOML]]
 deps = ["Dates"]
 uuid = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 version = "1.0.0"
-
-[[deps.TableTraits]]
-deps = ["IteratorInterfaceExtensions"]
-git-tree-sha1 = "c06b2f539df1c6efa794486abfb6ed2022561a39"
-uuid = "3783bdb8-4a98-5b6b-af9a-565f29a5fe9c"
-version = "1.0.1"
-
-[[deps.Tables]]
-deps = ["DataAPI", "DataValueInterfaces", "IteratorInterfaceExtensions", "LinearAlgebra", "OrderedCollections", "TableTraits", "Test"]
-git-tree-sha1 = "5ce79ce186cc678bbb5c5681ca3379d1ddae11a1"
-uuid = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
-version = "1.7.0"
 
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
@@ -1146,25 +1619,42 @@ version = "0.1.1"
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
+[[deps.TiffImages]]
+deps = ["ColorTypes", "DataStructures", "DocStringExtensions", "FileIO", "FixedPointNumbers", "IndirectArrays", "Inflate", "Mmap", "OffsetArrays", "PkgVersion", "ProgressMeter", "UUIDs"]
+git-tree-sha1 = "8621f5c499a8aa4aa970b1ae381aae0ef1576966"
+uuid = "731e570b-9d59-4bfa-96dc-6df516fadf69"
+version = "0.6.4"
+
+[[deps.TiledIteration]]
+deps = ["OffsetArrays"]
+git-tree-sha1 = "5683455224ba92ef59db72d10690690f4a8dc297"
+uuid = "06e1c1a7-607b-532d-9fad-de7d9aa2abac"
+version = "0.3.1"
+
 [[deps.TranscodingStreams]]
 deps = ["Random", "Test"]
-git-tree-sha1 = "216b95ea110b5972db65aa90f88d8d89dcb8851c"
+git-tree-sha1 = "0b829474fed270a4b0ab07117dce9b9a2fa7581a"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
-version = "0.9.6"
+version = "0.9.12"
 
 [[deps.Tricks]]
-git-tree-sha1 = "6bac775f2d42a611cdfcd1fb217ee719630c4175"
+git-tree-sha1 = "aadb748be58b492045b4f56166b5188aa63ce549"
 uuid = "410a4b4d-49e4-4fbc-ab6d-cb71b17b3775"
-version = "0.1.6"
+version = "0.1.7"
 
 [[deps.URIs]]
-git-tree-sha1 = "e59ecc5a41b000fa94423a578d29290c7266fc10"
+git-tree-sha1 = "074f993b0ca030848b897beff716d93aca60f06a"
 uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
-version = "1.4.0"
+version = "1.4.2"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]
 uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
+
+[[deps.UnPack]]
+git-tree-sha1 = "387c1f73762231e86e0c9c5443ce3b4a0a9a0c2b"
+uuid = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
+version = "1.0.2"
 
 [[deps.Unicode]]
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
@@ -1176,15 +1666,15 @@ uuid = "1cfade01-22cf-5700-b092-accc4b62d6e1"
 version = "0.4.1"
 
 [[deps.Unzip]]
-git-tree-sha1 = "34db80951901073501137bdbc3d5a8e7bbd06670"
+git-tree-sha1 = "ca0969166a028236229f63514992fc073799bb78"
 uuid = "41fe7b60-77ed-43a1-b4f0-825fd5a5650d"
-version = "0.1.2"
+version = "0.2.0"
 
 [[deps.Wayland_jll]]
 deps = ["Artifacts", "Expat_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg", "XML2_jll"]
-git-tree-sha1 = "3e61f0b86f90dacb0bc0e73a0c5a83f6a8636e23"
+git-tree-sha1 = "ed8d92d9774b077c53e1da50fd81a36af3744c1c"
 uuid = "a2964d1f-97da-50d4-b82a-358c7fce9d89"
-version = "1.19.0+0"
+version = "1.21.0+0"
 
 [[deps.Wayland_protocols_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1192,11 +1682,17 @@ git-tree-sha1 = "4528479aa01ee1b3b4cd0e6faef0e04cf16466da"
 uuid = "2381bf8a-dfd0-557d-9999-79630e7b1b91"
 version = "1.25.0+0"
 
+[[deps.WoodburyMatrices]]
+deps = ["LinearAlgebra", "SparseArrays"]
+git-tree-sha1 = "de67fa59e33ad156a590055375a30b23c40299d3"
+uuid = "efce3f68-66dc-5838-9240-27a6d6f5f9b6"
+version = "0.5.5"
+
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "Zlib_jll"]
-git-tree-sha1 = "58443b63fb7e465a8a7210828c91c08b92132dff"
+git-tree-sha1 = "93c41695bc1c08c46c5899f4fe06d6ead504bb73"
 uuid = "02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"
-version = "2.9.14+0"
+version = "2.10.3+0"
 
 [[deps.XSLT_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libgcrypt_jll", "Libgpg_error_jll", "Libiconv_jll", "Pkg", "XML2_jll", "Zlib_jll"]
@@ -1336,10 +1832,16 @@ uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
 version = "1.2.12+3"
 
 [[deps.Zstd_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "e45044cd873ded54b6a5bac0eb5c971392cf1927"
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "49ce682769cd5de6c72dcf1b94ed7790cd08974c"
 uuid = "3161d3a3-bdf6-5164-811a-617609db77b4"
-version = "1.5.2+0"
+version = "1.5.5+0"
+
+[[deps.fzf_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "868e669ccb12ba16eaf50cb2957ee2ff61261c56"
+uuid = "214eeab7-80f7-51ab-84ad-2988db7cef09"
+version = "0.29.0+0"
 
 [[deps.libaom_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1369,6 +1871,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "Zlib_jll"]
 git-tree-sha1 = "94d180a6d2b5e55e447e2d27a29ed04fe79eb30c"
 uuid = "b53b4c65-9356-5827-b1ea-8c7a1a84506f"
 version = "1.6.38+0"
+
+[[deps.libsixel_jll]]
+deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Pkg", "libpng_jll"]
+git-tree-sha1 = "d4f63314c8aa1e48cd22aa0c17ed76cd1ae48c3c"
+uuid = "075b6546-f08a-558a-be8f-8157d0f608a5"
+version = "1.10.3+0"
 
 [[deps.libvorbis_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Ogg_jll", "Pkg"]
@@ -1406,36 +1914,43 @@ version = "1.4.1+0"
 """
 
 # ╔═╡ Cell order:
-# ╟─adc9ed77-9ab1-4703-8054-0d6f6bb7b405
-# ╟─4dc05c97-8a7e-4ad3-b56b-020c505c731a
-# ╟─a7e26d36-4f3d-4184-821b-39cd2ae197b9
-# ╟─f1a51f87-e806-4f64-b50d-7afc08fa6550
-# ╟─9dd788c5-af04-430b-ad33-df622318e763
-# ╠═a990a6d7-02f9-4031-abcd-6c829d1b7c55
-# ╟─636ff0e7-03cf-4e1a-94c5-11c5bb51e0ee
-# ╟─76b8ac77-a7b3-42c5-a5b0-0e50ddc2656b
-# ╟─fccae648-7b0b-4a90-938b-c73f867487cf
-# ╟─13729830-9442-4da6-bc27-425759701a88
-# ╟─4672a17d-46ec-4bec-848a-41f37dafd957
-# ╟─d96cd57f-fda9-46a4-bd23-fcb5ea94eca7
-# ╟─d374b20b-c7b1-438b-a31e-fd00d9b04625
-# ╟─c380009a-4f2e-4a61-909f-49427fe8356a
-# ╟─0a1de841-1518-43b5-b7ce-4399f007ed59
-# ╟─b31602f8-a53b-4d33-b7d7-cfd4f946168b
-# ╟─153a9e6d-998c-4637-be1f-c99321e1d9d3
-# ╟─eada7863-de1f-40a7-8330-7a4aa17ab1e2
-# ╟─e8100835-e42b-4643-9595-14aa6f6cb1bf
-# ╟─a8b8880c-4a2f-45e8-a6fe-6a7e5bb3a3bd
-# ╟─dacea6a3-e721-4547-98c9-a546608687df
-# ╟─2f8db0cc-cf1f-4131-8e61-73f5556c7ca2
-# ╟─3aba74da-cb95-445c-a4f5-993a492471e9
-# ╟─3a58f424-3fd4-4287-8146-29b1db7f7c3c
-# ╟─801dca06-4e58-4374-b9c0-6e31a052003a
-# ╟─3efe3a6e-db77-4d91-ac42-08ccbbfde403
-# ╟─4ffb687c-e619-49a2-8269-fbbcbb4e4155
-# ╟─94717d14-4b74-483a-b614-3960e8e74071
-# ╟─4a689ecc-a25d-4dd2-ba30-87fe348525bd
-# ╟─ddb299ef-40b3-426e-be08-92d5de2fc969
-# ╟─a94dae85-dcaa-4c70-b9c8-902f3f7c52d9
+# ╟─3efd49dd-c556-41bd-8e72-7dae02ecf98e
+# ╟─080876f9-165e-4be0-8344-fb3b600e58c4
+# ╟─68f42c62-04e4-4cd8-ab06-81ae36d429c2
+# ╟─3d0dfca8-a2f0-4288-9199-6ebb05d095be
+# ╟─717a0eaf-26dd-45da-bf78-8f49337b6cdd
+# ╟─00876874-6d57-4ec3-a4a2-daecdbce568d
+# ╟─a8c002c8-9568-473e-9748-33f9e675f736
+# ╟─104177b7-d499-448d-9076-552d9e3dcf9f
+# ╟─2d0a2079-79e8-4ae8-ad99-9e10ed7a40f0
+# ╟─669b37f5-631c-4ad5-b4db-c0472fce93d4
+# ╟─ed4170bd-32c7-4cf7-aac7-5f0e87d6b780
+# ╟─d6e549d3-e43d-42f2-af3c-d2d3e060f83f
+# ╟─2745abb7-0b29-4fc2-9035-e68954ad4bed
+# ╟─43b46c18-1454-4e31-b74a-3771e8cadcdb
+# ╟─c791ea1e-9317-43b3-a9ad-662eee8d0d01
+# ╟─2a92ae22-391d-4f76-ad46-5dc28d24baa3
+# ╟─153109c5-b9a0-4519-8883-36bb5a47268b
+# ╟─839a845c-5f1e-406c-b4e3-ad43988bdb4f
+# ╟─16789574-e24a-4776-8d18-b38623685524
+# ╟─ca305417-d685-4736-b90f-6894c0d307bc
+# ╟─93425426-1ff2-4d88-8bda-4596c19ec53f
+# ╟─0025a72e-6ef9-4d8f-a608-91eda2d29c35
+# ╟─10798561-4fdc-4a04-b9c1-fbc163c38f49
+# ╟─af39a45a-35e3-4cf7-a235-f8b0df82f6b1
+# ╟─f2f15596-4e03-46d1-b7ec-0438cabfbfaf
+# ╟─8c7b01a8-6adb-4dc4-8af2-63f982e24ca2
+# ╟─0122b80b-15bc-41c9-860f-b02ff8071d2e
+# ╟─529a7833-72c7-4524-918f-33a52adac6e0
+# ╟─a514b66b-8c7a-44c2-b0fa-63f36d0ff2b0
+# ╟─58dd287d-b02a-4d4b-9c38-0f07f7371793
+# ╟─67b088fd-7544-45bd-9eae-5e90fed60c6c
+# ╟─f16fabc2-234d-4720-b074-6ffca58dc3fa
+# ╟─779667de-9baf-41f6-b58f-3bbfb3188572
+# ╟─e08fb096-37a1-4bb0-b52b-5a2ff640c891
+# ╟─f7c7d016-501f-4810-a04f-473ba57fa613
+# ╟─f09f3cb9-a0c7-406c-82da-7c7235ca96b0
+# ╟─567733eb-acca-4421-be9a-01ea66d3a33a
+# ╟─44d99566-5418-41bc-b9e4-b2a93076ae2e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
