@@ -413,16 +413,18 @@ begin
 	im1 = rect2D1.(gx,gx');
 	im2 = rect2D1.(gx,gx');
 	rconv = conv(im1,im2);
-
+	r3 = 
 	pim1 = surface(im1, c=:inferno, legend=:none,
 	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="x",ylabel="y",xticks=(0:10:50, string.(-25:10:25)),yticks=(0:10:50, string.(-25:10:25)),title="Apertura Cuadrada",margin=5mm)
 
 	pconv1 = surface(rconv, c=:inferno, legend=:none,
 	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="x",ylabel="y",xticks=(0:20:100, string.(-50:20:50)),yticks=(0:20:100, string.(-50:20:50)),title="MTF",margin=5mm)
 	
-	pconv2 = heatmap(rconv, c=:grays, axis=nothing,xlabel="x",ylabel="y",title=L"\sqcap(x/3,y/3)\ast \ast \sqcap(x/3,y/3)",margin=5mm)
-	
-	plot!(pim1, pconv1, pconv2, layout=(2,2)) 
+	fftim0 = abs.(fftshift(fft(rconv)))
+
+	pconv2 = surface(fftim0, c=:greens, legend=:none,
+	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel=L"k_x",ylabel=L"k_y",title="PSF",axis=nothing,framestyle=:none)
+	plot!(pim1, pconv2, pconv1, layout=(2,2)) 
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1948,7 +1950,7 @@ version = "1.4.1+0"
 # ╟─e08fb096-37a1-4bb0-b52b-5a2ff640c891
 # ╟─f7c7d016-501f-4810-a04f-473ba57fa613
 # ╟─f09f3cb9-a0c7-406c-82da-7c7235ca96b0
-# ╠═567733eb-acca-4421-be9a-01ea66d3a33a
+# ╟─567733eb-acca-4421-be9a-01ea66d3a33a
 # ╟─44d99566-5418-41bc-b9e4-b2a93076ae2e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
