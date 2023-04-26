@@ -297,7 +297,7 @@ Las ecuaciones formuladas en esta sección permitirán entregar las bases para e
 """
 
 # ╔═╡ 67b088fd-7544-45bd-9eae-5e90fed60c6c
-md""" $(LocalResource("Imagenes/D_3.png",:width => 400))"""
+md""" $(LocalResource("Imagenes/D_4.png",:width => 400))"""
 
 # ╔═╡ f16fabc2-234d-4720-b074-6ffca58dc3fa
 md"""
@@ -318,7 +318,7 @@ Para encontrar el valor del campo eléctrico en el punto $\boldsymbol{x'}$, apli
 
 	Considerando que la distribución de campo incidente $u_{i n}(x, y)$ se distribuye uniformemente en el área de la apertura y realizando cambios de variable, es posible re escribir la ecuación de la forma:
 
-	$$u\left(\mathbf{x}^{\prime}\right)=\iint_{S} \frac{a}{R} e^{(i\omega -kr)}ds$$
+	$$u\left(\mathbf{x}^{\prime}\right)=\iint_{S} \frac{a}{R} e^{i(\omega -kr)}ds$$
 Esta expresión es difícil de trbajar, por lo que se buscan aproximaciones que simplifiquen la expresión.
 """
 
@@ -334,7 +334,31 @@ En las aplicaciones en Astronomía se utiliza la difracción de Fraunhoffer o ap
 !!! alert "Aproximación de Fraunhoffer"
 	Cuando la fuente de campo es lejana al sistema óptico, es posible decir que $\boldsymbol{R}>>d$ donde $d$ es el diámetro de la apertura y $R$ es la distancia del centro de la apertura al punto. Tenemos:
 
-	$$R = \sqrt{x^2+y^2+z^2} \qquad r=\sqrt{(x-x')^2+(y-y')^2+(z-z')^2}$$
+	$$R = \sqrt{x'^2+y'^2+z'^2} \qquad r=\sqrt{(x-x')^2+(y-y')^2+(z-z')^2}$$
+
+	Desarrollamos los cuadrados de binomio en r:
+
+	$$r = \sqrt{x^2-2xx'+x'^2+y^2-2yy'+y'^2+z'^2}$$
+
+	Ahora reescribimos considerando que $R^2=x'^2+y'^2+z'^2$:
+
+	$$r = \sqrt{R^2+(x'^2+y'^2)-2(xx'+yy')}$$
+
+	Factorizando por $R^2$:
+
+	$$r = R\sqrt{1+\frac{x'^2+y'^2}{R^2}-2\frac{xx'+yy'}{R^2}}$$
+
+	Aplicando aproximación de campo lejano queda:
+
+	$$r\approx R\left[1-\frac{xx'+yy'}{R^2}\right]$$
+
+	Finalmente, aplicando a la formula de Rayleigh:
+
+	$$u\left(\mathbf{x}^{\prime}\right)=\iint_{S} \frac{a}{R} e^{i(\omega -kr)}ds \quad \rightarrow \quad u\left(\mathbf{x}^{\prime}\right)=\iint_{S} \frac{a}{R} e^{i(\omega -kR\left[1-\frac{xx'+yy'}{R^2}\right])}ds$$
+
+	Desarrollando las propiedades de las potencias:
+
+	$$u\left(\mathbf{x}^{\prime}\right)= \iint_{S} \frac{a}{R} e^{i(\omega -kR)}e^{ik\frac{xx'+yy'}{R}}ds$$
 """
 
 # ╔═╡ f7c7d016-501f-4810-a04f-473ba57fa613
