@@ -359,6 +359,12 @@ En las aplicaciones en Astronomía se utiliza la difracción de Fraunhoffer o ap
 	Desarrollando las propiedades de las potencias:
 
 	$$u\left(\mathbf{x}^{\prime}\right)= \iint_{S} \frac{a}{R} e^{i(\omega -kR)}e^{ik\frac{xx'+yy'}{R}}ds$$
+
+	La expresión $\frac{a}{R} e^{i(\omega -kR)}$ corresponde a una parametrización de la apertura de superficie $S$ que genera la difracción, la llamaremos $A(x,y)$ por lo que:
+
+	$$u\left(\mathbf{x}^{\prime}\right)= \int_{-\infty}^{\infty} \int_{-\infty}^{\infty}A(x,y)e^{ik\frac{xx'+yy'}{R}}dxdy$$
+
+	Podemos observar que **en aproximación de campo lejano, el valor del campo eléctrico en un punto ($\mathbf{x'}$,$\mathbf{y'}$) corresponde a la Transformada de Fourier 2D aplicada a la función apertura evaluada en las variables de frecuencia $\left(\mathbf{\frac{kx'}{R}},\mathbf{\frac{ky'}{R}}\right)$**
 """
 
 # ╔═╡ f7c7d016-501f-4810-a04f-473ba57fa613
@@ -1824,7 +1830,7 @@ version = "0.9.1+5"
 # ╟─67b088fd-7544-45bd-9eae-5e90fed60c6c
 # ╟─f16fabc2-234d-4720-b074-6ffca58dc3fa
 # ╟─779667de-9baf-41f6-b58f-3bbfb3188572
-# ╠═e08fb096-37a1-4bb0-b52b-5a2ff640c891
+# ╟─e08fb096-37a1-4bb0-b52b-5a2ff640c891
 # ╠═f7c7d016-501f-4810-a04f-473ba57fa613
 # ╟─44d99566-5418-41bc-b9e4-b2a93076ae2e
 # ╟─00000000-0000-0000-0000-000000000001
