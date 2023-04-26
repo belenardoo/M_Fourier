@@ -378,7 +378,25 @@ md"""
 Es posible modelar los sistemas ópticos como sistemas LTI, ya que se observa experimentalmente que no cambian la frecuencia de las ondas que los atraviesan. De esta forma, **cuando se forma una imagen producto de las ondas que vienen de un objeto luminoso y atraviesan una apertura, la iluminación de la imágen es la convolución entre la iluminación del ojeto y la respuesta al impulso del sistema**
 
 !!! note "PSF"
-	En los sistemas 2D a la respuesta al impulso se le llama *Piont Spread Function*
+	En los sistemas 2D a la respuesta al impulso se le llama *Piont Spread Function* (PSF) en un sistema óptico se tiene que:
+
+	$$PSF = \left\|u\right\|^2 \quad \rightarrow \quad PSF = \left\|\mathcal{F}\left\{A(x,y)\right\}\left(\mathbf{\frac{kx'}{R}},\mathbf{\frac{ky'}{R}}\right)\right\|^2$$
+
+!!! warning "OTF"
+
+	En óptica para medir las características de un sistema en general en lugar de utilizar la PSF se utiliza la *Optical Transfer Function* (OTF) que corresponde a la transformada de Fourier d la PSF:
+
+	$$OTF = \mathcal{F}\left\{PSF\right\}$$
+
+	Utilizando propiedad de la convolución de la transformada de Fourier y dualidad asuminedo que las aperturas siempre serán siméticas es posible definir la OTF como la autoconvolución de la función apertura:
+
+	$$OTF = \left\{A*A\right\}(k_x,k_y)$$
+
+	Dado que la OTF es un número complejo, esta se puede descomponer en magnitud y fase dando origen a dos funciones nuevas: *Modulation Transfer Function* (MTF) y *Phase Transfer Function* (PTF)
+
+	$$OTF = MTFe^{iPTF}$$
+
+	En este contexto es posible observar a los sistemas ópticos como un filtro de frecuencias espaciales.
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1840,7 +1858,7 @@ version = "0.9.1+5"
 # ╟─f16fabc2-234d-4720-b074-6ffca58dc3fa
 # ╟─779667de-9baf-41f6-b58f-3bbfb3188572
 # ╟─e08fb096-37a1-4bb0-b52b-5a2ff640c891
-# ╠═f7c7d016-501f-4810-a04f-473ba57fa613
+# ╟─f7c7d016-501f-4810-a04f-473ba57fa613
 # ╟─44d99566-5418-41bc-b9e4-b2a93076ae2e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
