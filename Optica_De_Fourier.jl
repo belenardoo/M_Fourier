@@ -107,6 +107,11 @@ $$\mu_0\epsilon_0\frac{d^2\boldsymbol{B}}{dt^2}=\boldsymbol{\nabla}^2\boldsymbol
 !!! note "Solución a la Ecuación de onda electromagnética"
 	$\boldsymbol{E}(\boldsymbol{r},t) = E_0e^{i(\boldsymbol{k}\cdot\boldsymbol{r}-\omega t)}\boldsymbol{\hat{n}} \qquad \boldsymbol{B}(\boldsymbol{r},t) = B_0e^{i(\boldsymbol{k}\cdot\boldsymbol{r}-\omega t)}\boldsymbol{\hat{k}}\times \boldsymbol{\hat{n}}$
 El campo eléctrico y el campo magnetico son transversales en el vacío, y la luz se mueve como una onda plana. En este contexto, el vector $\boldsymbol{r}$ corresponde a la posición de un punto en el espacio. Por su parte $\omega$ es la frecuencia angular de la onda y $\lambda$ la longitud de onda. El vector $\boldsymbol{k}$ corresponde al número de onda $\boldsymbol{k} = \frac{2\pi}{\lambda}\boldsymbol{\hat{k}}$ y $\boldsymbol{\hat{n}}$ es el vector de polarización.
+
+!!! warning "Irradiancia"
+	Se define como l iluminación de un objeto y se calcula de la forma:
+
+	$$I=\left\|\boldsymbol{E}\right\|^2$$
 """
 
 # ╔═╡ a8c002c8-9568-473e-9748-33f9e675f736
@@ -370,6 +375,10 @@ En las aplicaciones en Astronomía se utiliza la difracción de Fraunhoffer o ap
 # ╔═╡ f7c7d016-501f-4810-a04f-473ba57fa613
 md"""
 #### Respuesta al impulso
+Es posible modelar los sistemas ópticos como sistemas LTI, ya que se observa experimentalmente que no cambian la frecuencia de las ondas que los atraviesan. De esta forma, **cuando se forma una imagen producto de las ondas que vienen de un objeto luminoso y atraviesan una apertura, la iluminación de la imágen es la convolución entre la iluminación del ojeto y la respuesta al impulso del sistema**
+
+!!! note "PSF"
+	En los sistemas 2D a la respuesta al impulso se le llama *Piont Spread Function*
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
