@@ -329,10 +329,12 @@ md"""
 
 # ╔═╡ e08fb096-37a1-4bb0-b52b-5a2ff640c891
 md"""
-En las aplicaciones en Astronomía se utiliza la difracción de Fraunhoffer o aproximación de campo lejano para modelar el comportamiento de la luz en un sistema óptico.
+En las aplicaciones en Astronomía se utiliza la difracción de Fraunhoffer o aproximación de campo lejano para modelar el comportamiento de la luz en un sistema óptico. En este contexto se toma en cuenta que las fuentes luminosas se encuentran muy alejadas de el sistema óptico.
 
-Caja verde:
-!!! alert "Principio de Fresnel-Huygens"
+!!! alert "Aproximación de Fraunhoffer"
+	Cuando la fuente de campo es lejana al sistema óptico, es posible decir que $\boldsymbol{R}>>d$ donde $d$ es el diámetro de la apertura y $R$ es la distancia del centro de la apertura al punto. Tenemos:
+
+	$$R = \sqrt{x^2+y^2+z^2} \qquad r=\sqrt{(x-x')^2+(y-y')^2+(z-z')^2}$$
 """
 
 # ╔═╡ f7c7d016-501f-4810-a04f-473ba57fa613
