@@ -27,7 +27,7 @@ md"""
 
 # ╔═╡ 96ac9874-9fc8-48e9-b92f-bff39b85447f
 md"""
-## PSF de diferentes funciones
+## PSF de diferentes aperturas
 
 En esta sección se muestra la respuesta al impulso para diferentes tipos de apretura
 """
@@ -37,29 +37,87 @@ begin
 	gr(size=(800,600), legend=false)
 	rect(x) = abs(x) < 0.5 ? 1 : 0;
 	gx = -2.5:0.1:2.5;
-	rect2D1(x,y) = rect(2*x)*rect(2*y);
-	circ2D(x,y) = rect(2*sqrt(x^2+y^2));
-	im4 = circ2D.(gx,gx')
+	rect2D1(x,y) = rect(x)*rect(y);
+	circ2D(x,y) = rect(sqrt(x^2+y^2));
+	circ2DR(x,y) = circ2D(2*x,2*y);
+	im4 = circ2D.(gx,gx');
+	im5 = circ2D.(gx,gx')-circ2DR.(gx,gx');
 	im1 = rect2D1.(gx,gx');
 	im2 = rect2D1.(gx,gx');
 	rconv = conv(im1,im2);
 	rconvcirc = conv(im4,im4);
-	pim1 = surface(im1, c=:inferno, legend=:none,
-	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="x",ylabel="y",xticks=(0:10:50, string.(-25:10:25)),yticks=(0:10:50, string.(-25:10:25)),title="Apertura Cuadrada",margin=5mm)
+	rconvcirc2 = conv(im5,im5);
 
-	pim2 = surface(im4, c=:inferno, legend=:none,
-	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel="x",ylabel="y",xticks=(0:10:50),yticks=(0:10:50),title="Apertura Circular",margin=5mm)
+	pim1 = heatmap(im1, c=:grays, axis=nothing,xlabel="x",ylabel="y",title="Apertura Cuadrada",margin=5mm)
+
+	pim2 = heatmap(im4, c=:grays, axis=nothing,xlabel="x",ylabel="y",title="Apertura circular",margin=5mm)
+
+	pim3 = heatmap(im5, c=:grays, axis=nothing,xlabel="x",ylabel="y",title="Apertura Circular Obstruida",margin=5mm)
 	
 	fftim0 = abs.(fftshift(fft(rconv)))
 	fftim2 = abs.(fftshift(fft(rconvcirc)))
+	fftim3 = abs.(fftshift(fft(rconvcirc2)))
 	pconv0 = surface(fftim0, c=:greens, legend=:none,
 	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel=L"k_x",ylabel=L"k_y",title="PSF Apertura Cuadrada",axis=nothing,framestyle=:none)
 
 	pconv2 = surface(fftim2, c=:greens, legend=:none,
 	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel=L"k_x",ylabel=L"k_y",title="PSF Apertura Circular",axis=nothing,framestyle=:none)
 
-	plot!(pim1, pconv0,pim2,pconv2, layout=(2,2)) 
+	pconv3 = surface(fftim3, c=:greens, legend=:none,
+	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel=L"k_x",ylabel=L"k_y",title="PSF Apertura Circular Obstruida",axis=nothing,framestyle=:none)
+
+	plot!(pim1, pconv0,pim2,pconv2,pim3,pconv3, layout=(3,2)) 
 end
+
+# ╔═╡ 529a9e02-e39d-47d5-990c-5d023147826d
+md"""
+## MTF de diferentes aperturas
+En esta sección se muestra la función de modulación de frecuencia para diferentes tipos de apretura
+"""
+
+# ╔═╡ c0f14b8f-7172-4ab8-b4e7-9bd17f24ca19
+begin
+	gr(size=(800,600), legend=false)
+	rect_2(x) = abs(x) < 0.5 ? 1 : 0;
+	g_x = -2.5:0.1:2.5;
+	rect21(x,y) = rect_2(x)*rect_2(y);
+	circ2(x,y) = rect_2(sqrt(x^2+y^2));
+	circ2R(x,y) = circ2(2*x,2*y);
+	ima = rect2D1.(g_x,g_x');
+	imb = circ2D.(g_x,g_x');
+	imc = circ2D.(g_x,g_x')-circ2DR.(g_x,g_x');
+	rc = conv(ima,ima);
+	rcc = conv(imb,imb);
+	rc2 = conv(imc,imc);
+
+	pa = heatmap(ima, c=:grays, axis=nothing,xlabel="x",ylabel="y",title="Apertura Cuadrada",margin=5mm)
+
+	pb = heatmap(imb, c=:grays, axis=nothing,xlabel="x",ylabel="y",title="Apertura Circular",margin=5mm)
+
+	pc = heatmap(imc, c=:grays, axis=nothing,xlabel="x",ylabel="y",title="Apertura Circular Obstruida",margin=5mm)
+	
+	pca = surface(rc, c=:greens, legend=:none,
+	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel=L"k_x",ylabel=L"k_y",title="MTF Apertura Cuadrada",axis=nothing,framestyle=:none)
+
+	pcb = surface(rcc, c=:greens, legend=:none,
+	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel=L"k_x",ylabel=L"k_y",title="MTF Apertura Circular",axis=nothing,framestyle=:none)
+	pcc = surface(rc2, c=:greens, legend=:none,
+	nx=50, ny=50, display_option=Plots.GR.OPTION_SHADED_MESH, camera = (45, 45), xlabel=L"k_x",ylabel=L"k_y",title="MTF Apertura Circular Obstruida",axis=nothing,framestyle=:none)
+
+	plot!(pa,pca,pb,pcb,pc,pcc, layout=(3,2)) 
+end
+
+# ╔═╡ a35d80f6-1ca1-40d4-a501-6f6b28be5f71
+md"""
+## Cambio de propiedades de una apertur circular cuando es obstruida
+
+Cuando una apertura circular es obstruida, su PSF tiene un disco de airy mas pronunciado y el sistema óptio como filtro pasa bajos tiene más pendiente de atenuación
+"""
+
+# ╔═╡ 39649081-f09c-4b0c-9d94-b0b60f8fed41
+md"""
+## Los sistemas ópticos como filtro de frecuencia espacial
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1551,7 +1609,11 @@ version = "1.4.1+0"
 # ╟─3efd49dd-c556-41bd-8e72-7dae02ecf98e
 # ╟─080876f9-165e-4be0-8344-fb3b600e58c4
 # ╟─96ac9874-9fc8-48e9-b92f-bff39b85447f
-# ╠═567733eb-acca-4421-be9a-01ea66d3a33a
+# ╟─567733eb-acca-4421-be9a-01ea66d3a33a
+# ╟─529a9e02-e39d-47d5-990c-5d023147826d
+# ╟─c0f14b8f-7172-4ab8-b4e7-9bd17f24ca19
+# ╟─a35d80f6-1ca1-40d4-a501-6f6b28be5f71
+# ╠═39649081-f09c-4b0c-9d94-b0b60f8fed41
 # ╟─44d99566-5418-41bc-b9e4-b2a93076ae2e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
