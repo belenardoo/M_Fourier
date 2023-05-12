@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.25
+# v0.19.22
 
 #> [frontmatter]
 #> author = "Rodrigo F. Cádiz"
@@ -12,7 +12,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ 44d99566-5418-41bc-b9e4-b2a93076ae2e
-using LaTeXStrings, Plots, Random, Images, PlutoUI,DSP,Measures,FFTW
+using LaTeXStrings, Plots, Random, Images, PlutoUI,DSP,Measures,FFTW, MAT
 
 # ╔═╡ 3efd49dd-c556-41bd-8e72-7dae02ecf98e
 md"""
@@ -130,15 +130,6 @@ Measures = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
-
-[compat]
-DSP = "~0.7.8"
-FFTW = "~1.6.0"
-Images = "~0.25.2"
-LaTeXStrings = "~1.3.0"
-Measures = "~0.3.2"
-Plots = "~1.38.10"
-PlutoUI = "~0.7.50"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -147,7 +138,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "0e4adc8f4228f1b69d1e37875ff0f8b3592b3768"
+project_hash = "19ee08c933ba974506d8486f62520fd73076bbfe"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -432,15 +423,15 @@ version = "3.3.8+0"
 
 [[deps.GR]]
 deps = ["Artifacts", "Base64", "DelimitedFiles", "Downloads", "GR_jll", "HTTP", "JSON", "Libdl", "LinearAlgebra", "Pkg", "Preferences", "Printf", "Random", "Serialization", "Sockets", "TOML", "Tar", "Test", "UUIDs", "p7zip_jll"]
-git-tree-sha1 = "db730189e3d250d97515a91886de7e33aa8833e6"
+git-tree-sha1 = "0635807d28a496bb60bc15f465da0107fb29649c"
 uuid = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
-version = "0.72.2"
+version = "0.72.0"
 
 [[deps.GR_jll]]
 deps = ["Artifacts", "Bzip2_jll", "Cairo_jll", "FFMPEG_jll", "Fontconfig_jll", "GLFW_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pixman_jll", "Qt5Base_jll", "Zlib_jll", "libpng_jll"]
-git-tree-sha1 = "47a2efe07729dd508a032e2f56c46c517481052a"
+git-tree-sha1 = "99e248f643b052a77d2766fe1a16fb32b661afd4"
 uuid = "d2c73de3-f751-5644-a686-071e5b155ba9"
-version = "0.72.2+0"
+version = "0.72.0+0"
 
 [[deps.Gettext_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "XML2_jll"]
@@ -638,9 +629,9 @@ version = "0.1.5"
 
 [[deps.IntelOpenMP_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "0cb9352ef2e01574eeebdb102948a58740dcaf83"
+git-tree-sha1 = "d979e54b71da82f3a65b62553da4fc3d18c9004c"
 uuid = "1d5cc7b8-4909-519e-a0f8-d0f5ad9712d0"
-version = "2023.1.0+0"
+version = "2018.0.3+2"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]
@@ -735,9 +726,9 @@ version = "1.3.0"
 
 [[deps.Latexify]]
 deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Printf", "Requires"]
-git-tree-sha1 = "ee342fcc2b8762c43a60dfbbf73bc2258703af19"
+git-tree-sha1 = "2422f47b34d4b127720a18f86fa7b1aa2e141f29"
 uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
-version = "0.15.19"
+version = "0.15.18"
 
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
@@ -910,12 +901,6 @@ version = "0.3.4"
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 version = "2022.2.1"
 
-[[deps.MutableArithmetics]]
-deps = ["LinearAlgebra", "SparseArrays", "Test"]
-git-tree-sha1 = "3295d296288ab1a0a2528feb424b854418acff57"
-uuid = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
-version = "1.2.3"
-
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
 git-tree-sha1 = "0877504529a3e5c3343c6f8b4c0381e57e4387e4"
@@ -979,9 +964,9 @@ version = "0.8.1+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
-git-tree-sha1 = "5b3e170ea0724f1e3ed6018c5b006c190f80e87d"
+git-tree-sha1 = "e9d68fe4b5f78f215aa2f0e6e6dc9e9911d33048"
 uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
-version = "1.3.5"
+version = "1.3.4"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -1071,9 +1056,9 @@ version = "1.3.4"
 
 [[deps.Plots]]
 deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JLFzf", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "Preferences", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SnoopPrecompile", "SparseArrays", "Statistics", "StatsBase", "UUIDs", "UnicodeFun", "Unzip"]
-git-tree-sha1 = "5434b0ee344eaf2854de251f326df8720f6a7b55"
+git-tree-sha1 = "186d38ea29d5c4f238b2d9fe6e1653264101944b"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.38.10"
+version = "1.38.9"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
@@ -1082,10 +1067,10 @@ uuid = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 version = "0.7.50"
 
 [[deps.Polynomials]]
-deps = ["ChainRulesCore", "LinearAlgebra", "MakieCore", "MutableArithmetics", "RecipesBase"]
-git-tree-sha1 = "66443538efd80fac4962b74523ec0b35c9464a21"
+deps = ["ChainRulesCore", "LinearAlgebra", "MakieCore", "RecipesBase"]
+git-tree-sha1 = "86efc6f761df655f8782f50628e45e01a457d5a2"
 uuid = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
-version = "3.2.9"
+version = "3.2.8"
 
 [[deps.Preferences]]
 deps = ["TOML"]
@@ -1266,9 +1251,9 @@ version = "0.1.1"
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "Random", "StaticArraysCore", "Statistics"]
-git-tree-sha1 = "63e84b7fdf5021026d0f17f76af7c57772313d99"
+git-tree-sha1 = "70e0cc0c0f9ef7ea76b3d7a50ada18c8c52e69a2"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.5.21"
+version = "1.5.20"
 
 [[deps.StaticArraysCore]]
 git-tree-sha1 = "6b7ba252635a5eff6a0b0664a41ee140a1c9e72a"
@@ -1614,6 +1599,6 @@ version = "1.4.1+0"
 # ╟─c0f14b8f-7172-4ab8-b4e7-9bd17f24ca19
 # ╟─a35d80f6-1ca1-40d4-a501-6f6b28be5f71
 # ╠═39649081-f09c-4b0c-9d94-b0b60f8fed41
-# ╟─44d99566-5418-41bc-b9e4-b2a93076ae2e
+# ╠═44d99566-5418-41bc-b9e4-b2a93076ae2e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
