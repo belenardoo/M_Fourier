@@ -162,13 +162,13 @@ end
 # ╔═╡ bdb6c83b-0367-4cf3-a354-0982efd58ec8
 md"""
 !!! alert "Apertura Cuadrada Pequeña"
-	Comenzamos generando la salida cuando la señal de entrada atraviesa una apertura cuadrada pequeña:
+	A continuación, observamos cómo se vería la luna a través de un telescopio con una apertura cuadrada pequeña. La imagen formada corresponde a la imagen original de la luna convolucionada con la PSF del sistema óptico (la transformada de Fourier de la autoconvolución de la apertura.)
 """
 
 # ╔═╡ f3f95262-c582-4d0a-b612-0e039983938b
 begin
 	F= fft(Float64.(Gray.(luna)));
-	gr(size=(990,742), legend=false)
+	gr(size=(1000,750), legend=false)
 	g_L = -371:1:370;
 	g_K= -495:1:494;
 	i1 = rect2D1.(g_L/30,g_K'/32);
@@ -184,6 +184,11 @@ end
 # ╔═╡ 159cf3ba-7600-4448-9cfe-a12ea5fd678e
 md"""
 !!! alert "Apertura Cuadrada Grande"
+	En este ejemplo podemos observar que conservando la geometría de la apertura pero aumentando su área es posible aumentar la resolución de la imagen formada. Esto se debe a la propiedad del escalamiento de la transformada de Fourier:
+	
+	$$\mathcal{F}\left\{f \left(ax,by\right)\right\}= \frac{1}{|a||b|}F\left(\frac{u}{a},\frac{v}{b} \right)$$
+
+	Es posible notar que cuando algo se comprime en un dominio se hace ancho en el otro y vice versa, por lo que se puede concluir que tener una apertura más grande genera una PSF más fina y por lo tanto la respuesta al impulso del sistema óptico *se parece más a un impulso*.
 """
 
 # ╔═╡ 4ef527ba-4b87-4afa-9035-19fa2c9eb83a
@@ -202,23 +207,28 @@ end
 # ╔═╡ 6fa65f52-b03d-4636-96aa-3108327faaf1
 md"""
 !!! alert "Apertura Circular"
+	En esta sección observaremos cómo cambiar la geometría de la apertura afecta a la respuesta al impulso. Para esto, generamos una apertura circular de diámetro igual al largo de la apertura cuadrada pequeña antes utilizada y obsrevamos la imagen formada a la salida.
+	Es posible notar que se conservan en mayor medida los detalles.
 """
 
 # ╔═╡ 4868facc-1b3d-4905-9413-6151c51fe7a7
 begin
-	gr(size=(2000,2000), legend=false)
-	i7 = circ2D.(g_L/3,g_K'/3);
+
+	gr(size=(1000,750), legend=false)
+	i1c = circ2D.(g_L/150,g_K'/150);
 	
-	p7 = heatmap(abs.(i7), c=:grays, axis=nothing,xlabel="x",ylabel="y",title="Apertura Circular",aspect_ratio=1,yflip=true)
-	PSF_3 = fft(i7);
-	out_3 = ifft(PSF_3.*F.*PSF_3);
-	p8 = heatmap(abs.(out_3), c=:grays, axis=nothing,xlabel="x",ylabel="y",title="Luna a través deApertura Circular ",aspect_ratio=1,yflip=true)
-	plot!(p7,p8)
+	pcirc = heatmap(abs.(i1c), c=:grays, axis=false,grid=false,title="Apertura Circular",aspect_ratio=1,yflip=true)
+	PSFc = fft(i1c);
+	PSF_Fc=ifft(abs.(PSFc.*PSFc));
+	outc = ifft(F.*PSF_Fc);
+	p2c = heatmap(abs.(outc), c=:grays, axis=false,grid=false,title="Luna a través de Apertura Circular Pequeña",aspect_ratio=1,yflip=true)
+	plot!(pcirc,p2c)
 end
 
 # ╔═╡ 4a3d576c-0e27-48d1-84c9-288398c50363
 md"""
 !!! alert "Apertura Circular Obstruida"
+	A continuación construya usted la salida del sistema cuando la apertura es una apertura circular obstruida en el 25% de su centro. Concluya y justifique matemáticamente cuales son los efectos que genera la obstrucción.
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1879,12 +1889,12 @@ version = "1.4.1+0"
 # ╟─7973f0bd-f1b4-4191-9acf-10d85cec2528
 # ╟─76b1a0f0-1eb7-4b0a-91a0-61251a97fdad
 # ╟─bdb6c83b-0367-4cf3-a354-0982efd58ec8
-# ╠═f3f95262-c582-4d0a-b612-0e039983938b
-# ╠═159cf3ba-7600-4448-9cfe-a12ea5fd678e
-# ╠═4ef527ba-4b87-4afa-9035-19fa2c9eb83a
-# ╟─6fa65f52-b03d-4636-96aa-3108327faaf1
-# ╠═4868facc-1b3d-4905-9413-6151c51fe7a7
+# ╟─f3f95262-c582-4d0a-b612-0e039983938b
+# ╟─159cf3ba-7600-4448-9cfe-a12ea5fd678e
+# ╟─4ef527ba-4b87-4afa-9035-19fa2c9eb83a
+# ╠═6fa65f52-b03d-4636-96aa-3108327faaf1
+# ╟─4868facc-1b3d-4905-9413-6151c51fe7a7
 # ╟─4a3d576c-0e27-48d1-84c9-288398c50363
-# ╠═44d99566-5418-41bc-b9e4-b2a93076ae2e
+# ╟─44d99566-5418-41bc-b9e4-b2a93076ae2e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
