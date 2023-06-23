@@ -22,11 +22,165 @@ md"""
 # ╔═╡ 080876f9-165e-4be0-8344-fb3b600e58c4
 md"""
 !!! danger "Objetivos"
-	Bienvenidos a este séptimo video de la primera semana del MOOC "Aplicaciones de la Transformada de Fourier". En esta sección aprenderemos sobre la Transformada de Fourier de 2 dimensiones, que será utilizada en aplicaciones específicas durante el curso.
+	Bienvenidos a este séptimo video de la primera semana del MOOC "Aplicaciones de la Transformada de Fourier". En esta sección extenderemos los aprendizajes de la Transformada de Fourier a 2 dimensiones, ya que estos contenidos que serán utilizados durante el curso.
 """
 
 # ╔═╡ 5c20fcc8-e341-407d-9720-457bfe77ce33
+md"""
+## Transformada de Fourier 2D
+"""
 
+# ╔═╡ 7ac8c1e4-db45-41a4-b5cd-68de2dc32883
+md"""
+La Transformada de Fourier en $\mathbb{R}^2$ se define como
+
+!!! note "Transformada de Fourier 2D"
+	$$\mathcal{F} \{f\}\left(\xi_1, \xi_2\right)=\int_{-\infty}^{\infty} \int_{-\infty}^{\infty} e^{-2 \pi i\left(x_1\xi_1+x_2\xi_2 \right)} f\left(x_1, x_2\right) dx_1 dx_2$$
+
+	donde $\mathcal{F}\{f\}:\mathbb{R}^2\rightarrow\mathbb{C}$
+
+La Transformada de Fourier inversa en $\mathbb{R}^2$ se define de la siguiente manera:
+
+!!! note "Transformada de Fourier inversa"
+
+    $$\mathcal{F}^{-1}\{\mathcal{F}\{f\}\}\left(x_1,x_2 \right) = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} e^{2 \pi i\left(x_1\xi_1+x_2\xi_2 \right)} \mathcal{F}\{f\}\left(\xi_1,\xi_2\right) d\xi_1 d\xi_2$$
+
+	donde $\mathcal{F}\{f\}:\mathbb{R}^2\rightarrow\mathbb{C}$
+
+
+"""
+
+# ╔═╡ 5f84bc50-7265-4f8f-b708-d9481bfd2755
+md"""
+### Funciones separables
+
+Veamos que sucede si intentamos calcular la Transformada de Fourier bi-dimensional $\mathcal{F}\{f\}\left(\xi_{1}, \xi_{2}\right)$ de una función separable $f(x_1,x_2)$
+
+$$\begin{aligned}\mathcal{F}\{f\}\left(\xi_{1},\xi_{2}\right) &=\int_{\mathbb{R}^{2}} e^{-2 \pi i (x_1+x_2) \cdot (\xi_1,\xi_2)} f(x_1,x_2) d(x_1,x_2) \\ &=\int_{-\infty}^{\infty} \int_{-\infty}^{\infty} e^{-2 \pi i\left(x_{1} \xi_{1}+x_{2} \xi_{2}\right)} f\left(x_{1}, x_{2}\right) d x_{1} d x_{2} \\ &=\int_{-\infty}^{\infty} \int_{-\infty}^{\infty} e^{-2 \pi i \xi_{1} x_{1}} e^{-2 \pi i \xi_{2} x_{2}} f_{1}\left(x_{1}\right) f_{2}\left(x_{2}\right) d x_{1} d x_{2} \\ &=\int_{-\infty}^{\infty}\left(\int_{-\infty}^{\infty} e^{-2 \pi i \xi_{1} x_{1}} f_{1}(x) d x_{1}\right) e^{-2 \pi i \xi_{2} x_{2}} f_{2}\left(x_{2}\right) d x_{2} \\
+&=\mathcal{F}\{f_{1}\}\left(\xi_{1}\right) \int_{-\infty}^{\infty} e^{-2 \pi i \xi_{2} x_{2}} f_{2}\left(x_{2}\right) d x_{2} \\ &=\mathcal{F}\{f_{1}\}\left(\xi_{1}\right) \mathcal{F}\{f_{2}\}\left(\xi_{2}\right) \end{aligned}$$
+
+Resumiendo
+
+!!! alert "Transformada de Fourier de funciones separables"
+	$$\mathcal{F}\{f\}\left(\xi_{1}, \xi_{2}\right) = \mathcal{F}\{f_{1}\}\left(\xi_{1}\right) \mathcal{F}\{f_{2}\}\left(\xi_{2}\right)$$ 
+
+	Vemos que el cálculo de la Transformada de Fourier de funciones separables es trivial, es simplemente la multiplicación de las Transformadas de Fourier individuales en cada una de las variables independientes.
+!!! warning "Ejemplo: rect bidimensional"
+	El resultado anterior nos permite calcular muy fácilmente la Transformada de Fourier de un $\sqcap$ en $\mathbb{R}^2$:
+	
+	$\mathcal{F}\{\sqcap(x,y)\}(u,v) = \mathcal{F}\{\sqcap(x)\sqcap(y)\}(u,v) = \text{sinc}(u)\text{sinc}(v) = \text{sinc}(u,v)$
+	
+	lo que nos permite calcular nuestro primer par de Fourier en dos dimensiones:
+	
+	$\sqcap(x,y) \rightarrow \text{sinc}(u,v)$
+"""
+
+# ╔═╡ 35666930-d014-4bae-90ae-fece871ee19b
+md"""
+## Transformadas de Fourier parciales
+
+Consideremos nuevamente la definición de la Transformada de Fourier en $\mathbb{R}^2$:
+
+$$\begin{aligned}
+\mathcal{F}\{f\}\left(\xi_{1}, \xi_{2}\right) &=\int_{-\infty}^{\infty} \int_{-\infty}^{\infty} e^{-2 \pi i\left(x_{1} \xi_{1}+x_{2} \xi_{2}\right)} f\left(x_{1}, x_{2}\right) d x_{1} d x_{2} \\
+&=\int_{-\infty}^{\infty} e^{-2 \pi i x_{2} \xi_{2}}\left(\int_{-\infty}^{\infty} e^{-2 \pi i x_{1} \xi_{1}} f\left(x_{1}, x_{2}\right) d x_{1}\right) d x_{2}
+\end{aligned}$$
+
+La integral interior es la Transformada de Fourier 1D de $f\left(x_{1}, x_{2}\right)$ con respecto a $x_{1}$. Para encontrar el resultado completo $\mathcal{F}\{ f\}\left(\xi_{1}, \xi_{2}\right)$ falta tomar otra Transformada de Fourier 1D, esta vez respecto a la otra variable $x_{2}$. Esto se podría hacer en el orden inverso también.
+
+De esta manera podemos introducir el concepto de la **Transformada de Fourier parcial**. En este caso, hay dos transformadas posibles:
+
+!!! alert "Transformadas de Fourier parciales"
+	$$\mathcal{F}_{1}\{f\left(x_1, x_2\right)\}(\xi_1) =\int_{-\infty}^{\infty} e^{-2 \pi i x_{1} \xi_{1}} f\left(x_{1}, x_{2}\right) d x_{1}$$
+
+	y
+
+	$$\mathcal{F}_{2}\{f\left(x_{1}, x_{2}\right)\}(\xi_2) =\int_{-\infty}^{\infty} e^{-2 \pi i x_{2} \xi_{2}} f\left(x_{1}, x_{2}\right) d x_{2}$$
+
+	De esta manera
+
+	$$\mathcal{F}\{f\}=\mathcal{F}_{1}\{\mathcal{F}_{2} \{f\}\}=\mathcal{F}_{2}\{\mathcal{F}_{1}\{f\}\}$$
+
+"""
+
+# ╔═╡ 6551ea97-3338-4e7e-a90f-0ccf2087aee4
+md"""
+## 2D DFT
+"""
+
+# ╔═╡ a5ed0e9a-6917-4dcf-b895-1edf1efe16ce
+md"""
+La Transformada de Fourier Discreta en $\mathbb{Z}^2$ o 2D-DFT, se define como
+
+!!! note "2D-DFT"
+	$$\tilde{F}[k,l] = \sum_{m=0}^{M-1}\sum_{n=0}^{N-1}\tilde{f}[m,n]e^{-i 2 \pi (\frac{km}{M} + \frac{ln}{N})}$$
+
+Tal como en el [caso unidimensional](SS-E-DFT.jl.html), esta Transformada solo opera para señales periódicas. En esta definición $k$ y $l$ son versiones muestreadas de frecuencia espacial.
+
+La Transformada Inversa es
+
+!!! note "2D-DFT Inversa"
+	$$\tilde{f}[m,n] = \frac{1}{MN}\sum_{k=0}^{M-1}\sum_{l=0}^{N-1}\tilde{F}[k,l]e^{i 2 \pi (\frac{km}{M} + \frac{ln}{N})}$$
+
+!!! warning "Ejemplo: Impulso de línea"
+	Supongamos la secuencia de ancho y largo finito $(N,N):$ 
+	
+	$$f[m,n] = \delta[m-n]\sqcap_{N,N}[m,n]$$
+	
+	es decir un impulso de línea discreto contenido en un cuadrado.
+	
+	Utilizando la definición, tenemos
+	
+	$$\tilde{F}[k,l] = \sum_{m=0}^{N-1}\sum_{n=0}^{N-1}\delta[m-n] e^{-i 2 \pi (\frac{km}{N} + \frac{ln}{N})}$$
+	
+	Como solo tenemos valores distintos de cero en la diagonal, solo necesitamos sumar en esos puntos, es decir
+	
+	$$\tilde{F}[k,l] = \sum_{m=0}^{N-1}e^{-i 2 \pi (\frac{(k+l)m}{N})}$$
+	
+	Recordando que las exponenciales complejas son ortogonales, esta suma solo tendrá  el valor $N$ cuando $k+l=0, \pm N, \pm 2N$. Y como la función solo nos interesa en $(N,N)$, entonces,
+	
+	$$\tilde{F}[k,l] = N\delta[k+l]$$
+	
+	A continuación se grafican esta secuencia a la izquierda y su 2D-DFT a la derecha, para el caso $N=11$.
+### Periodicidad
+
+La 2D-DFT es periódica de período $(M,N)$, es decir
+
+!!! note "2D-DFT es una operación periódica en frecuencia"
+	$$\tilde{F}[k,l] = \tilde{F}[k+M,l] = \tilde{F}[k,l+N] = \tilde{F}[k+M,l+N]$$
+
+de la misma forma, la señal en el dominio espacial tambien es periódica
+
+!!! note "2D-DFT es una operación periódica en el espacio"
+	$$\tilde{f}[m,n] = \tilde{F}[m+M,n] = \tilde{F}[m,n+N] = \tilde{F}[m+M,n+N]$$
+
+
+### MUX = NVY = 1
+Recordemos que una señal discreta puede ser [periódica solo si el período es un múltiplo entero del periódo o intervalo de muestreo](SS-E-Apodizacion_y_Derrame.jl.html). 
+
+En el muestreo en $x$, el intervalo es $X$ y el período es $1/U$, el inverso del intervalo de muestreo en la frecuencia. Entonces debe cumplirse que
+
+> $MUX = 1$ 
+
+donde $M$ es este múltiplo entero. De manera análoga,
+
+> $NVY = 1$
+
+en el caso de la dimensión $y$, con el múltiplo entero $N$.
+
+
+
+
+Entonces, la 2D-DFT se puede obtener a partir del muestreo en frecuencia de la DSFT mediante
+
+!!! note "2D-DFT a partir del muestreo en frecuencia de la DSFT"
+	$$F[k,l] = \tilde{F}(u,v)\lvert_{u=kU,v=lV} \quad k=0,1,\cdots,M-1 \quad \mathrm{y} \quad l=0,1,\cdots,N-1$$
+
+La 2D-DFT también se puede obtener a partir del muestreo en el espacio de la 2D-DFFT mediante
+
+!!! note "2D-DFT a partir del muestreo en el espacio de la 2D-DFFT"
+	$$f[m,n] = \tilde{f}(x,y)\lvert_{x=mX,y=nY} \quad m=0,1,\cdots,M-1 \quad \mathrm{y} \quad n=0,1,\cdots,N-1$$
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1517,7 +1671,12 @@ version = "1.4.1+0"
 # ╔═╡ Cell order:
 # ╟─3efd49dd-c556-41bd-8e72-7dae02ecf98e
 # ╟─080876f9-165e-4be0-8344-fb3b600e58c4
-# ╠═5c20fcc8-e341-407d-9720-457bfe77ce33
+# ╟─5c20fcc8-e341-407d-9720-457bfe77ce33
+# ╟─7ac8c1e4-db45-41a4-b5cd-68de2dc32883
+# ╟─5f84bc50-7265-4f8f-b708-d9481bfd2755
+# ╟─35666930-d014-4bae-90ae-fece871ee19b
+# ╟─6551ea97-3338-4e7e-a90f-0ccf2087aee4
+# ╟─a5ed0e9a-6917-4dcf-b895-1edf1efe16ce
 # ╟─44d99566-5418-41bc-b9e4-b2a93076ae2e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
